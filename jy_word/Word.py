@@ -665,7 +665,7 @@ class Relationship:
     def write_pkg(self, rId, url):
         pkg_part = '<pkg:part pkg:name="/word/media/%s.png" pkg:contentType="image/png" pkg:compression="store">' % (
             rId)
-        pkg_part += '<pkg:binaryData>' + pic_b64encode(url, none=self.none) + '</pkg:binaryData></pkg:part>'
+        pkg_part += '<pkg:binaryData>' + pic_b64encode(url) + '</pkg:binaryData></pkg:part>'
         return pkg_part
 
     def document_pkg_part(self, body):
@@ -844,8 +844,10 @@ def get_imgs(path, pdf_path='', base_dir=''):
                 sp = img.size
                 w, h = px2cm(sp[0]), px2cm(sp[1])
                 rId = '.'.join(i.split('.')[:-1])
-                if url.startswith(base_dir):
+                if path_file.startswith(base_dir):
                     url = path_file[len(base_dir):]
+                else:
+                    url = path_file
                 info = {'rId': rId.replace(' ', '_'), 'url': url, 'h': h, 'w': w, 'absolute_url': path_file}
                 infos.append(info)
         else:

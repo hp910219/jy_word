@@ -2,17 +2,18 @@
 # coding: utf-8
 __author__ = 'huo'
 import sys
+import os
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-from File import File
-from Word import Paragraph, Run, Set_page, Table, Tc, Tr, HyperLink
+from jy_word.File import File
+from jy_word.Word import Paragraph, Run, Set_page, Table, Tc, Tr, HyperLink
 from Word import write_pkg_parts, get_imgs
 img_info_path = 'img_info.json'
 
 my_file = File()
 
-r = Run('img_info.json')
+r = Run(img_info_path)
 hyperlink = HyperLink()
 r.family_en = 'Times New Roman'
 p = Paragraph()
@@ -44,7 +45,7 @@ tc = Tc()
 def generate_word():
     file_name = 'my_word.doc'
     print u'%s begin.' % file_name
-    imgs = get_imgs(r'D:\pythonproject\jy_word\jy_word')
+    imgs = get_imgs(os.path.dirname(__file__))
     my_file.write(img_info_path, imgs)
     body = p.h4('hello, my word!')
     body += p.write(r.picture(cx=10, rId='ex'))
