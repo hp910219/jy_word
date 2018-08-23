@@ -41,11 +41,10 @@ class File:
                 else:
                     items.append(c)
             csv.unregister_dialect('my_dialect')
-            f.close()
             return items
         else:
             text = f.read()
-            f.close()
+        f.close()
         if file_type == 'json':
             return json.loads(text)
         return text

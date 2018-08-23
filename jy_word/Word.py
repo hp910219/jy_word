@@ -852,6 +852,14 @@ def get_imgs(path, pdf_path, base_dir):
     return infos
 
 
+def get_img(rId):
+    items = my_file.read(img_info_path)
+    for item in items:
+        if rId.lower() == item['rId'].lower():
+            return item
+    return None
+
+
 def is_img(file_path):
     postfix = ['.png', '.jpg', '.jpeg']
     for p in postfix:
