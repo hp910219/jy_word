@@ -6,7 +6,7 @@ from PIL import Image
 from pdf2img import pdf2img
 import re
 import os
-from File import File, base_dir
+from File import File
 my_file = File()
 bm_index0 = 453150345
 __author__ = 'huohuo'
@@ -769,18 +769,6 @@ def write_pkg_parts(imgs, body,  none='none', show_page=True, title='', **kwargs
             footer_index = 'footer%d' % index
             pkg_parts += relationship.about_page(footer_index, footers_pkg[index-1])
             relationshipss[1] += relationship.write_rel(footer_index, 'footer')
-    if len(title) > 0:
-        title += ['']
-        img = get_img('logo')
-        for i in range(len(title)):
-            h_index = 'header%d' % (i + 1)
-            if i == len(title) - 1:
-                paras, rels = '', ''
-            else:
-                paras = p.write(p.set(pStyle='a7'), r.text(title[i], 9, color='00ADEF') + r.picture(img['w'] * 0.4, img['h'] * 0.4, '1', posOffset=[-1, -0.66]))
-                rels = relationship.write_rel('1', target_name='media/logo.png')
-            pkg_parts += relationship.about_page(h_index, paras, page_type='header', rels=rels)
-            relationshipss[1] += relationship.write_rel(h_index, 'header')
     pkg_parts0 = relationship.document_rels(relationshipss[0], pkg_name='/_rels/', padding=512)
     pkg_parts0 += relationship.document_rels(relationshipss[1])
     pkg_parts0 += relationship.document_pkg_part(body)
@@ -839,14 +827,14 @@ def str_length(contents):
     return n
 
 
-def get_imgs(path):
+def get_imgs(path, pdf_path, base_dir):
     infos = []
     for i in os.listdir(path):
         path_file = os.path.join(path, i)
         if os.path.isfile(path_file):
             if i.endswith('.pdf'):
                 i = i.replace('.pdf', '.png')
-                out_path = os.path.join(base_dir, 'images\\pdf\\%s' % i)
+                out_path = os.path.join(pdf_path, i)
                 pdf2img(path_file, out_path=out_path)
                 path_file = out_path
                 # print i, path_file, path
@@ -859,7 +847,7 @@ def get_imgs(path):
                 info = {'rId': rId.replace(' ', '_'), 'url': url, 'h': h, 'w': w, 'absolute_url': path_file}
                 infos.append(info)
         else:
-            infos1 = get_imgs(path_file)
+            infos1 = get_imgs(path_file, pdf_path, base_dir)
             infos += infos1
     return infos
 

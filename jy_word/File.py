@@ -17,10 +17,7 @@ class File:
         self.base_dir = base_dir
 
     def read(self, file_name, sheet_name='', read_type='r', dict_name='', to_json=True, **kwargs):
-        if os.path.exists(dict_name + "/" + file_name):
-            url = dict_name + "/" + file_name
-        else:
-            url = self.base_dir + "/" + dict_name + "/" + file_name
+        url = os.path.join(dict_name, file_name)
         file_type = file_name.split('.')[-1]
         if file_type in ['xlsx', 'xls']:
             data = xlrd.open_workbook(url)
