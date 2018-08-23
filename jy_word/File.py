@@ -17,8 +17,8 @@ class File:
         self.base_dir = base_dir
 
     def read(self, file_name, sheet_name='', read_type='r', dict_name='', to_json=True, **kwargs):
-        url = os.path.join(dict_name, file_name)
         file_type = file_name.split('.')[-1]
+        url = os.path.join(self.base_dir, dict_name, file_name)
         if file_type in ['xlsx', 'xls']:
             data = xlrd.open_workbook(url)
             return data.sheet_by_name(sheet_name)
@@ -44,7 +44,6 @@ class File:
             f.close()
             return items
         else:
-
             text = f.read()
             f.close()
         if file_type == 'json':
