@@ -842,7 +842,7 @@ def str_length(contents):
 def get_imgs(path):
     infos = []
     for i in os.listdir(path):
-        path_file = os.path.join(path,i)
+        path_file = os.path.join(path, i)
         if os.path.isfile(path_file):
             if i.endswith('.pdf'):
                 i = i.replace('.pdf', '.png')
@@ -862,14 +862,6 @@ def get_imgs(path):
             infos1 = get_imgs(path_file)
             infos += infos1
     return infos
-
-
-def get_img(rId):
-    items = my_file.read(img_info_path)
-    for item in items:
-        if rId.lower() == item['rId'].lower():
-            return item
-    return None
 
 
 def is_img(file_path):
@@ -907,15 +899,3 @@ def crop_img(input_url, output_url):
     cropImg = img.crop(region)
     #保存裁切后的图片
     cropImg.save(output_url)
-
-
-def get_img_info(base_dir, is_refresh=False):
-    crop_img(r'%s\data\signature\signature.png' % base_dir, r'%s\images\part4\4.5.1signature.png' % base_dir)
-    crop_img(r'%s\data\signature\signature_pie.png' % base_dir, r'%s\images\part4\4.5.2signature_pie.png' % base_dir)
-    if is_refresh:
-        img_info = get_imgs(base_dir)
-        img_info = uniq_list(img_info)
-        my_file.write(img_info_path, img_info)
-    else:
-        img_info = my_file.read(img_info_path)
-    return img_info

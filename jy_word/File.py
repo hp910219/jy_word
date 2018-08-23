@@ -6,21 +6,21 @@ import json
 import xlrd
 import csv
 __author__ = 'huohuo'
-base_dir = os.path.dirname(__file__)
 if __name__ == "__main__":
     pass
 
 
 class File:
 
-    def __init__(self):
+    def __init__(self, base_dir=''):
         self.__description__ = '文件相关， 包括读文件，写文件， 下载文件'
+        self.base_dir = base_dir
 
     def read(self, file_name, sheet_name='', read_type='r', dict_name='', to_json=True, **kwargs):
         if os.path.exists(dict_name + "/" + file_name):
             url = dict_name + "/" + file_name
         else:
-            url = base_dir + "/" + dict_name + "/" + file_name
+            url = self.base_dir + "/" + dict_name + "/" + file_name
         file_type = file_name.split('.')[-1]
         if file_type in ['xlsx', 'xls']:
             data = xlrd.open_workbook(url)
@@ -67,7 +67,7 @@ class File:
         postfix = file_type
         if file_name[-len(file_type):] == file_type:
             file_name = file_name[:len(file_name)-len(file_type)-1]
-        url = "%s/%s.%s" % (base_dir, file_name, postfix)
+        url = "%s/%s.%s" % (self.base_dir, file_name, postfix)
         f = open(url, "w")
         if file_type == 'json':
             f.write(json.dumps(data, sort_keys=True, indent=4, ensure_ascii=False))
