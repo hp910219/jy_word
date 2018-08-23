@@ -5,7 +5,7 @@ __author__ = 'huohuo'
 from setuptools import setup, find_packages
 
 setup(
-    nam='jy-word',
+    name='jy-word',
     version='0.6',
     keywords=('word', 'test'),
     description='generate word',
