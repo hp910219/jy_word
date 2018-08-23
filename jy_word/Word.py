@@ -263,11 +263,12 @@ class SDT:
 
 
 class Run:
-    def __init__(self):
+    def __init__(self, img_info_path=''):
         self.test = 'hello word'
         self.familyTheme = 'minorEastAsia'
         self.family_en = 'Times New Roman'
         self.family = ''
+        self.img_info_path = img_info_path
 
     def text(self, content, size=10.5, weight=0, underline='', space=False, wingdings=False, windChar='F09E',
              vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='', szCs=0, lang='', noProof=False):
@@ -332,7 +333,7 @@ class Run:
 
     def picture(self, cx=0, cy=0, rId='', relativeFrom=['column', 'paragraph'], posOffset=[0, 0], align=['', ''],
                 wrap='tight', text_wrapping='anchor', zoom=1):
-        img_info = get_img(rId)
+        img_info = get_img(self.img_info_path, rId)
         if img_info is None:
             return ''
         cx1 = img_info['w']
@@ -827,7 +828,7 @@ def str_length(contents):
     return n
 
 
-def get_imgs(path, pdf_path, base_dir):
+def get_imgs(path, pdf_path='', base_dir=''):
     infos = []
     for i in os.listdir(path):
         path_file = os.path.join(path, i)
@@ -852,7 +853,7 @@ def get_imgs(path, pdf_path, base_dir):
     return infos
 
 
-def get_img(rId):
+def get_img(img_info_path, rId):
     items = my_file.read(img_info_path)
     for item in items:
         if rId.lower() == item['rId'].lower():

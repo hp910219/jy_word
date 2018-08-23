@@ -7,11 +7,12 @@ sys.setdefaultencoding('utf-8')
 
 from File import File
 from Word import Paragraph, Run, Set_page, Table, Tc, Tr, HyperLink
-from Word import write_pkg_parts
+from Word import write_pkg_parts, get_imgs
+img_info_path = 'img_info.json'
 
 my_file = File()
 
-r = Run()
+r = Run('img_info.json')
 hyperlink = HyperLink()
 r.family_en = 'Times New Roman'
 p = Paragraph()
@@ -43,7 +44,11 @@ tc = Tc()
 def generate_word():
     file_name = 'my_word.doc'
     print u'%s begin.' % file_name
-    pkg = write_pkg_parts([], p.h4('hello, my word!'), title=[])
+    imgs = get_imgs(r'D:\pythonproject\jy_word\jy_word')
+    my_file.write(img_info_path, imgs)
+    body = p.h4('hello, my word!')
+    body += p.write(r.picture(cx=10, rId='ex'))
+    pkg = write_pkg_parts(imgs, body, title=[])
     my_file.download(pkg, file_name)
     print u'%s over.' % file_name
 

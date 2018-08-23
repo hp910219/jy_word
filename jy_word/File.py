@@ -59,10 +59,7 @@ class File:
 
     def write(self, file_name, data):
         file_type = file_name.split('.')[-1]
-        postfix = file_type
-        if file_name[-len(file_type):] == file_type:
-            file_name = file_name[:len(file_name)-len(file_type)-1]
-        url = "%s/%s.%s" % (self.base_dir, file_name, postfix)
+        url = os.path.join(self.base_dir, file_name)
         f = open(url, "w")
         if file_type == 'json':
             f.write(json.dumps(data, sort_keys=True, indent=4, ensure_ascii=False))
