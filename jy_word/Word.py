@@ -2,12 +2,13 @@
 # coding: utf-8
 
 import base64
-import requests
+from PIL import Image
+from pdf2img import pdf2img
 import re
-import traceback
 import os
-
-
+from File import File, base_dir
+my_file = File()
+bm_index0 = 453150345
 __author__ = 'huohuo'
 
 contentType = "application/vnd.openxmlformats-package.relationships+xml"
@@ -20,41 +21,6 @@ schemas_open = 'http://schemas.openxmlformats.org'
 schemas_open_2006 = '%s/officeDocument/%d'% (schemas_open, 2006)
 schemas_open_draw_2006 = '%s/drawingml/%d'% (schemas_open, 2006)
 schemas_open_pack_2006 = '%s/package/%d/relationships'% (schemas_open, 2006)
-
-
-class JYFile:
-
-    def __init__(self):
-        self.__description__ = '文件相关， 包括读文件，写文件， 下载文件'
-
-    def read(self, file_path, **kwargs):
-        if not os.path.exists(file_path):
-            return None
-        read_type = 'r'
-        if file_path.endswith('.png') or file_path.endswith('.jpg'):
-            read_type = 'rb'
-        if 'read_type' in kwargs:
-            read_type = kwargs['read_type']
-        f = open(file_path, read_type)
-        text = f.read()
-        f.close()
-        return text
-
-    def write(self, file_path, data):
-        f = open(file_path, "w")
-        f.write(data)
-        f.close()
-
-    def download(self, pkg_parts, file_name):
-        try:
-            temp_data = self.read("demo.xml")
-            temp_data = temp_data.replace('<pkg:part id="pkg_parts"></pkg:part>', pkg_parts)
-            self.write(file_name, temp_data)
-            return 'success'
-        except:
-            message = traceback.format_exc()
-            traceback.print_exc()
-            return message
 
 
 class Paragraph:
@@ -72,7 +38,7 @@ class Paragraph:
         para += '</w:p>'
         return para
 
-    def set(self, spacing=[0, 0], line=19.2, rule='exact', ind=[0, 0], jc='left',
+    def set(self, spacing=[0, 0], line=12, rule='auto', ind=[0, 0], jc='left',
             sect_pr='', outline=0, keepNext='', **kwargs):
         sss = ['before', 'after']
         w_spacing = '<w:spacing w:line="%d" ' % (int(line * 20))
@@ -98,7 +64,7 @@ class Paragraph:
                     if type(ind[i]) == str:
                         ind_str += 'w:%s="%d"' % (iii[i], int(float(ind[i].split("cm")[0]) * 567))
                     else:
-                        ind_str += 'w:%sChars="%d" w:%s="%d"' % (iii[i], int(ind[i] * 100), iii[i], int(ind[i] * 210))
+                        ind_str += 'w:%sChars="%d" w:%s="%d" ' % (iii[i], int(ind[i] * 100), iii[i], int(ind[i] * 210))
             ind_str += '/>'
         pStyle = ''
         if 'pStyle' in kwargs:
@@ -178,23 +144,28 @@ class Paragraph:
                                                                                            posOffset=posOffset))
         return init
 
-    def h5(self, text, size=11, spacing=[1.5, 0], weight=0, ind=[0, 0], line=18, jc='left', outline=4, family='', family_en='', bm_name=''):
+    def h5(self, text, size=10.5, spacing=[1, 1], weight=0, ind=[0, 0], line=14, jc='left', outline=4, family='', family_en='', bm_name=''):
         r = Run()
         if family != '':
             r.family = family
         if family_en != '':
             r.family_en = family_en
-        return self.write(self.set(spacing=spacing, line=line, rule='auto', outline=outline, ind=ind, jc=jc),
+        return self.write(self.set(spacing=spacing, line=line, rule='exact', outline=outline, ind=ind, jc=jc),
                           r.text(text, size, weight=weight), bm_name)
 
-    def h4(self, text='', size=11, spacing=[1.5, 0], weight=1, ind=[0, 0], line=24, runs='', family='', family_en='', bm_name=''):
+    def h4(self, text='', size=12, spacing=[1.3, 1], weight=1, ind=[0, 0], line=15, runs='', family='', family_en='', bm_name='', cat=None, color=''):
         r = Run()
         if family != '':
             r.family = family
         if family_en != '':
             r.family_en = family_en
-        run = r.text(text, size=size, weight=weight) + runs
-        return self.write(self.set(spacing=spacing, line=line, rule='auto', outline=3, ind=ind), run, bm_name)
+        if cat is not None:
+            bm_name = cat['bm']
+            text = cat['title']
+        if bm_name != '':
+            print text
+        run = r.text(text, size=size, weight=weight, color=color) + runs
+        return self.write(self.set(spacing=spacing, line=line, rule='exact', outline=2, ind=ind), run, bm_name)
 
     def h3(self, text, run='', before=0, after=0, size=11, left=0, right=0, jc='center', family='', family_en=''):
         r = Run()
@@ -298,8 +269,10 @@ class Run:
         self.family_en = 'Times New Roman'
         self.family = ''
 
-    def text(self, content, size=11, weight=0, underline='', space=False, wingdings=False, windChar='F09E',
+    def text(self, content, size=10.5, weight=0, underline='', space=False, wingdings=False, windChar='F09E',
              vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='', szCs=0, lang='', noProof=False):
+        # https://www.jb51.net/web/560864.html
+        content = str(content).replace("<", "&lt;").replace(">", "&gt;").replace('&', '&amp;')
         rFonts = '<w:rFonts w:ascii="' + self.family_en
         if self.family == '':
             rFonts += '" w:eastAsiaTheme="' + self.familyTheme
@@ -353,16 +326,26 @@ class Run:
             r += '<w:r w:rsidR="003334DE"><w:br w:type="column"/></w:r>'
         return r
 
-    def style(self, text, val='af8'):
-        r = '<w:r><w:rPr><w:rStyle w:val="%s"/><w:rFonts w:eastAsiaTheme="%s"/></w:rPr><w:t>%s</w:t></w:r>' % (val, self.familyTheme, text)
-        return r
-
     def br(self, br_type='column'):
         r = '<w:r w:rsidR="003334DE"><w:br w:type="%s"/></w:r>' % br_type
         return r
 
     def picture(self, cx=0, cy=0, rId='', relativeFrom=['column', 'paragraph'], posOffset=[0, 0], align=['', ''],
-                wrap='tight', text_wrapping='anchor'):
+                wrap='tight', text_wrapping='anchor', zoom=1):
+        img_info = get_img(rId)
+        if img_info is None:
+            return ''
+        cx1 = img_info['w']
+        cy1 = img_info['h']
+        if cx == 0 and cy == 0:
+            zoom = zoom
+        elif cx == 0 or cx * cy != 0:
+            zoom = cy / cy1
+        elif cy == 0:
+            zoom = cx / cx1
+        if cx * cy == 0:
+            cx = cx1 * zoom
+            cy = cy1 * zoom
         p = ['positionH', 'positionV']
         postition = ''
         srcRect = ''
@@ -429,7 +412,7 @@ class Run:
         run += picPr
 
         run += '</pic:nvPicPr><pic:blipFill>'
-        run += '<a:blip r:embed="%s"' % rId
+        run += '<a:blip r:embed="rId%s"' % rId.capitalize()
         if text_wrapping != 'inline':
             run += ' cstate="print"><a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">'
             run += '<a14:useLocalDpi val="0" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/>'
@@ -464,12 +447,16 @@ class Run:
         r1 = '<w:r><w:rPr><w:rFonts w:eastAsiaTheme="%s"/></w:rPr><w:tab/></w:r>' % self.familyTheme
         return r1
 
+    def style(self, text, val='af8'):
+        r = '<w:r><w:rPr><w:rStyle w:val="%s"/><w:rFonts w:eastAsiaTheme="%s"/></w:rPr><w:t>%s</w:t></w:r>' % (val, self.familyTheme, text)
+        return r
+
 
 class Set_page:
     def __init__(self):
         self.test = 'test'
 
-    def set_page(self, sign='', type='', cols=1, header='', footer='', space=425, pgNumType_s=-1, page_size=[21, 29.7], page_margin=[2.54, 3, 2.54, 3, 2, 1.47], orient=""):
+    def set_page(self, sign='', type='', cols=1, header='', footer='', space=425, pgNumType_s=-1, page_size=[21, 29.7], page_margin=[3, 1.5, 2.54, 1.5, 1.5,1.75], orient=""):
         mar = ['top', 'right', 'bottom', 'left', 'header', 'footer']
         a = '<w:sectPr w:rsidR="008059BD" w:rsidSect="008059BD">'
         # <w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>
@@ -502,13 +489,23 @@ class Table:
     def __init__(self):
         self.test = ''
 
-    def write(self, trs='', ws=[], tblBorders=['top', 'left', 'bottom', 'right']):
-        tblPr = '<w:tblPr><w:tblW w:w="%d" w:type="dxa"/><w:jc w:val="center"/>' % sum(ws)
-        tblPr += '<w:tblBorders>'
-        for b in tblBorders:
-            tblPr += '<w:%s w:val="single" w:sz="4" w:space="0" w:color="auto"/>' % b
-        tblPr += '</w:tblBorders>'
-        tblPr += '<w:tblLayout w:type="fixed"/>'
+    def write(self, trs='', ws=[], tblBorders=['top', 'left', 'bottom', 'right'], jc='center', bdColor='auto', **kwargs):
+        tblPr = '<w:tblPr><w:tblW w:w="%d" w:type="dxa"/><w:jc w:val="%s"/>' % (sum(ws), jc)
+        if 'ind' in kwargs:
+            tblPr += '<w:tblInd w:w="%d" w:type="dxa"/>' % (int(kwargs['ind'] * 567))
+        border_size = 4
+        if 'border_size' in kwargs:
+            border_size = kwargs['border_size']
+        if len(tblBorders) > 0:
+            tblPr += '<w:tblBorders>'
+            for b in tblBorders:
+                tblPr += '<w:%s w:val="single" w:sz="%d" w:space="0" w:color="%s"/>' % (b, border_size, bdColor)
+            if 'insideColor'in kwargs:
+                tblPr += '<w:%s w:val="single" w:sz="%d" w:space="0" w:color="%s"/>' % ('insideH', border_size, kwargs['insideColor'])
+                tblPr += '<w:%s w:val="single" w:sz="%d" w:space="0" w:color="%s"/>' % ('insideV', border_size, kwargs['insideColor'])
+            tblPr += '</w:tblBorders>'
+        if not('is_fixed' in kwargs and kwargs['is_fixed'] is False):
+            tblPr += '<w:tblLayout w:type="fixed"/>'
         tblPr += '''<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="0" w:noVBand="0"/>
         </w:tblPr>'''
         tblGrid = '<w:tblGrid>'
@@ -518,76 +515,7 @@ class Table:
         table = '<w:tbl>' + tblPr + tblGrid + trs + '</w:tbl>'
         return table
 
-    def write_jy(self, trsss, tcBorders=['top', 'bottom'], ws=[], jc='center', before=0, after=0, sign='', gene=None, tblBorders=['top', 'left', 'bottom', 'right'], theadColor='auto', thBorders=['top', 'bottom'], jc2=''):
-        tr = Tr()
-        tc = Tc()
-        p = Paragraph()
-        r = Run()
-        if len(trsss) == 0:
-            return p.null_data()
-        trs = ''
-        pPr = p.set(jc=jc, spacing=[before, after])
-        for k in range(len(trsss)):
-            tr2 = trsss[k]
-            if 'sign' in tr2:
-                trPr = tr.set('<w:cantSplit/>')
-                if 'trHeight' in tr2:
-                    trPr = tr.set('<w:cantSplit/>', tr2['trHeight'])
-                if tr2['sign'] == 'th1':
-                    trs += tr.write(set=trPr, tcs=tc.write(p.write(run=r.text(tr2['text'][0], weight=1)),
-                                                           tc.set(w=sum(ws), tcBorders=tcBorders, gridSpan=4)))
-                if tr2['sign'] == 'th1-1':
-                    para = p.write(run=r.text(tr2['text'][0].split("\n")[0], weight=1))
-                    if "\n" in tr2['text'][0]:
-                        for i in range(1, len(tr2['text'][0].split("\n"))):
-                            para += p.write(run=r.text(tr2['text'][0].split("\n")[i]))
-                    trs += tr.write(set=trPr, tcs=tc.write(para, tc.set(w=sum(ws), tcBorders=tcBorders, gridSpan=4,
-                                                                        vAlign='top')))
-                if tr2['sign'] == 'th2':
-                    tcs = tc.write(p.write(pPr, run=r.text(tr2['text'][0])),
-                                   tc.set(w=sum(ws[:1]), tcBorders=tcBorders, gridSpan=1))
-                    run = r.text(tr2['text'][1])
-                    tcs += tc.write(p.write(pPr, run=run), tc.set(w=sum(ws[1:]), tcBorders=tcBorders, gridSpan=3))
-                    trs += tr.write(set=trPr, tcs=tcs)
-            else:
-                tcs2 = ''
-                size = 10
-                weight = 0
-                fill= 'auto'
-                tcBorders1 = tcBorders
-
-                if sign == '':
-                    if k == 0:
-                        size = 11
-                        weight = 1
-                        fill = theadColor
-                        tcBorders1 = thBorders
-                for i in range(len(tr2['text'])):
-                    if tr2['text'][i] == 'picture':
-                        tcs2 += tc.write(p.write(pPr, run=tr2['picture']), tc.set(w=ws[i], tcBorders=tcBorders))
-                    else:
-                        italic = False
-                        if k > 0 and gene != None and i == gene:
-                            italic = True
-                        run = ''
-                        if tr2['text'][i] == '1000G频率':
-                            run = r.text('1000G', size=size, italic=italic, weight=weight)
-                            run += r.text('', wingdings=True, windChar='F040', vertAlign='top')
-                            run += r.text('频率', size=size, italic=italic, weight=weight)
-                        else:
-                            run = r.text(tr2['text'][i], size=size, italic=italic, weight=weight)
-                        if i == 0 or k == 0:
-                            jc1 = jc
-                        else:
-                            jc1 = jc if jc2 == '' else jc2
-                        pPr = p.set(jc=jc1, spacing=[before, after])
-                        tcs2 += tc.write(
-                            p.write(pPr, run),
-                            tc.set(w=ws[i], tcBorders=tcBorders1, fill=fill))
-                trs += tr.write(tcs2)
-        return self.write(trs, ws=ws, tblBorders=tblBorders)
-
-    def write_jy1(self, trsss, ws, table_borders=['top', 'left', 'bottom', 'right'], tc_borders=['top', 'bottom'], sign='', gene=None,  th_color='auto', th_borders=['top', 'bottom'], th_size=10, tc_size=10, th_weight=1, tc_weight=0, tc_color='auto', th_pPr='', tc_pPr=''):
+    def write_jy1(self, trsss, ws, table_borders=['top', 'left', 'bottom', 'right'], tc_borders=['top', 'bottom'], sign='', gene=None,  th_color='auto', th_borders=['top', 'bottom'], th_size=10, tc_size=10, th_weight=1, tc_weight=0, tc_color='auto', th_pPr='', tc_pPr='', cell_color='auto', **kwargs):
         tr = Tr()
         tc = Tc()
         p = Paragraph()
@@ -614,8 +542,6 @@ class Table:
                 fill = th_color
                 tcBorders1 = th_borders
                 pPr = th_pPr
-            if 'trHeight' in tr2:
-                trPr = tr.set(tr2['trHeight'])
             if 'sign' in tr2:
                 gridSpan = [len(ws)]
                 ws1 = [sum(ws)]
@@ -658,9 +584,12 @@ class Table:
                     para = p.write(pPr, run=run)
                     for t in texts[1:]:
                         para += p.write(pPr, r.text(t))
-                    tcs2 += tc.write(para, tc.set(w=ws1[i], tcBorders=tcBorders1, gridSpan=gridSpan[i], vAlign=vAlign, fill=fill))
+                    tcs2 += tc.write(para, tc.set(w=ws1[i], tcBorders=tcBorders1, gridSpan=gridSpan[i], vAlign=vAlign, fill=fill, color=cell_color))
             trs += tr.write(set=trPr, tcs=tcs2)
-        return self.write(trs, ws=ws, tblBorders=table_borders)
+        bdColor = cell_color
+        if 'bdColor' in kwargs:
+            bdColor = kwargs['bdColor']
+        return self.write(trs, ws=ws, tblBorders=table_borders, bdColor=bdColor)
 
 
 class Tr:
@@ -687,20 +616,26 @@ class Tc:
         tc = '<w:tc>' + tcPr + paras + '</w:tc>'
         return tc
 
-    def set(self, w=0, vMerge='', tcBorders=['top', 'bottom'], gridSpan=0, vAlign='center', color="auto", fill='auto'):
+    def set(self, w=0, vMerge='', tcBorders=['top', 'bottom'], gridSpan=0, vAlign='center', color="auto", fill='auto', **kwargs):
         # if w < 100:
         #     w = int(w * 567)
         #     print w
         tcBorders_str = ''
+        line_type = 'single'
+        if 'line_type' in kwargs:
+            line_type = kwargs['line_type']
         if len(tcBorders) > 0:
             tcBorders_str = '<w:tcBorders>'
+            # <w:bottom w:val="single" w:sz="12" w:space="0" w:color="auto"/>
             for b in tcBorders:
-                tcBorders_str += '<w:%s w:val="single" w:sz="4" w:space="0" w:color="%s"/>' % (b, color)
+                tcBorders_str += '<w:%s w:val="%s" w:sz="8" w:space="0" w:color="%s"/>' % (b, line_type, color)
             tcBorders_str += '</w:tcBorders>'
         tcPr = '<w:tcPr><w:tcW w:w="%d" w:type="dxa"/>' % w
         if gridSpan != 0:
             tcPr += '<w:gridSpan w:val="%d"/>' % gridSpan
-        tcPr += vMerge + tcBorders_str + '<w:shd w:val="clear" w:color="auto" w:fill="%s"/><w:vAlign w:val="%s"/></w:tcPr>' % (fill, vAlign)
+        tcPr += vMerge + tcBorders_str
+        tcPr += '<w:shd w:val="clear" w:color="auto" w:fill="%s"/>' % (fill)
+        tcPr += '<w:vAlign w:val="%s"/></w:tcPr>' % vAlign
         return tcPr
 
 
@@ -787,28 +722,16 @@ class Relationship:
 
 
 def pic_b64encode(url, none='none1'):
-    my_file = JYFile()
-    if url.startswith('http://'):
-        try:
-            rq = requests.get(url)
-            if rq.status_code == 200:
-                content = rq.content
-            else:
-                content = None
-        except:
-            content = None
-    else:
-        content = my_file.read(url + '.png')
-    if content is None:
-        content = my_file.read('%s.png' % none)
+    content = my_file.read(url, 'png', read_type='rb')
     image_rb = base64.b64encode(content)
     return image_rb
 
 
-def write_pkg_parts(rIds, urls, body,  none='none', show_page=True):
+def write_pkg_parts(imgs, body,  none='none', show_page=True, title='', **kwargs):
     relationship = Relationship()
     relationship.none = none
     p = Paragraph()
+    r = Run()
     relationshipss = []
     aa = [
         [
@@ -834,17 +757,30 @@ def write_pkg_parts(rIds, urls, body,  none='none', show_page=True):
             relationships += relationship.write_rel(a[0], a[1], target_name, target_mode)
         relationshipss.append(relationships)
     pkg_parts = ''
-    for i in range(len(rIds)):
-        relationshipss[1] += relationship.write_rel(rIds[i])
-        pkg_parts += relationship.write_pkg(rIds[i], urls[i])
+    for i in range(len(imgs)):
+        rId, url = imgs[i]['rId'], imgs[i]['url']
+        relationshipss[1] += relationship.write_rel(rId)
+        pkg_parts += relationship.write_pkg(rId, url)
     if show_page:
         sdt = SDT()
-        footers_pkg = [sdt.write(), p.write(p.set(pStyle="a5"))]
+        footers_pkg = [p.write(p.set(pStyle="a5")), sdt.write()]
         indexs = [1, 2]
         for index in indexs:
             footer_index = 'footer%d' % index
             pkg_parts += relationship.about_page(footer_index, footers_pkg[index-1])
             relationshipss[1] += relationship.write_rel(footer_index, 'footer')
+    if len(title) > 0:
+        title += ['']
+        img = get_img('logo')
+        for i in range(len(title)):
+            h_index = 'header%d' % (i + 1)
+            if i == len(title) - 1:
+                paras, rels = '', ''
+            else:
+                paras = p.write(p.set(pStyle='a7'), r.text(title[i], 9, color='00ADEF') + r.picture(img['w'] * 0.4, img['h'] * 0.4, '1', posOffset=[-1, -0.66]))
+                rels = relationship.write_rel('1', target_name='media/logo.png')
+            pkg_parts += relationship.about_page(h_index, paras, page_type='header', rels=rels)
+            relationshipss[1] += relationship.write_rel(h_index, 'header')
     pkg_parts0 = relationship.document_rels(relationshipss[0], pkg_name='/_rels/', padding=512)
     pkg_parts0 += relationship.document_rels(relationshipss[1])
     pkg_parts0 += relationship.document_pkg_part(body)
@@ -854,19 +790,18 @@ def write_pkg_parts(rIds, urls, body,  none='none', show_page=True):
     return pkg_parts0
 
 
-def write_cat(cat, index, para, pos='9736', spacing=[0, 0]):
+def write_cat(cat, para, pos='12000', spacing=[0, 0]):
     r = Run()
     p = Paragraph()
     hyperlink = HyperLink()
     run = ''
-    if index == 453150345:
+    if cat['bm'] == bm_index0:
         run = r.fldChar('begin')
         run += r.instr_text('1-3', space=True)
         run += r.fldChar()
-    run += hyperlink.write(index, cat[0], cat[2])
-    para += p.write(p.set(pStyle=cat[3], tabs=['right', 'dot', pos], line=18, spacing=spacing, rule='auto'), run=run)
-    index += 1
-    return para, index
+    run += hyperlink.write(cat['bm'], cat['title'], cat['page'])
+    para += p.write(p.set(pStyle=cat['style'], tabs=['right', 'dot', pos], line=18, spacing=spacing, rule='auto'), run=run)
+    return para
 
 
 def str_except(data, key, text=u"无"):
@@ -903,3 +838,84 @@ def str_length(contents):
             n += len(i)
     return n
 
+
+def get_imgs(path):
+    infos = []
+    for i in os.listdir(path):
+        path_file = os.path.join(path,i)
+        if os.path.isfile(path_file):
+            if i.endswith('.pdf'):
+                i = i.replace('.pdf', '.png')
+                out_path = os.path.join(base_dir, 'images\\pdf\\%s' % i)
+                pdf2img(path_file, out_path=out_path)
+                path_file = out_path
+                # print i, path_file, path
+            if is_img(i):
+                img = Image.open(path_file)
+                sp = img.size
+                w, h = px2cm(sp[0]), px2cm(sp[1])
+                rId = '.'.join(i.split('.')[:-1])
+                url = path_file[len(base_dir):]
+                info = {'rId': rId.replace(' ', '_'), 'url': url, 'h': h, 'w': w, 'absolute_url': path_file}
+                infos.append(info)
+        else:
+            infos1 = get_imgs(path_file)
+            infos += infos1
+    return infos
+
+
+def get_img(rId):
+    items = my_file.read(img_info_path)
+    for item in items:
+        if rId.lower() == item['rId'].lower():
+            return item
+    return None
+
+
+def is_img(file_path):
+    postfix = ['.png', '.jpg', '.jpeg']
+    for p in postfix:
+        if file_path.endswith(p):
+            return True
+    return False
+
+
+def uniq_list(my_list):
+    new_list = []
+    for item in my_list:
+        if item not in new_list:
+            new_list.append(item)
+    return new_list
+
+
+def px2cm(h):
+    # 1px = 0.4cm
+    h = float(h) * 0.04  # 像素换算为厘米
+    return h
+
+
+def crop_img(input_url, output_url):
+    img = Image.open(input_url)
+    sp = img.size
+    w, h = sp[0], sp[1]
+    region = (0, h/3, w, h/3 * 2)
+    if 'pie' in input_url:
+        region = (w/3 - 60, 320, w / 3 * 2 + 200, h-320)
+    if os.path.exists(output_url):
+        os.remove(output_url)
+    #裁切图片
+    cropImg = img.crop(region)
+    #保存裁切后的图片
+    cropImg.save(output_url)
+
+
+def get_img_info(base_dir, is_refresh=False):
+    crop_img(r'%s\data\signature\signature.png' % base_dir, r'%s\images\part4\4.5.1signature.png' % base_dir)
+    crop_img(r'%s\data\signature\signature_pie.png' % base_dir, r'%s\images\part4\4.5.2signature_pie.png' % base_dir)
+    if is_refresh:
+        img_info = get_imgs(base_dir)
+        img_info = uniq_list(img_info)
+        my_file.write(img_info_path, img_info)
+    else:
+        img_info = my_file.read(img_info_path)
+    return img_info
