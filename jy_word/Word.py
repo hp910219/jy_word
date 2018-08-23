@@ -722,8 +722,8 @@ class Relationship:
         return self.about_page(rel_type, content, rel_type, xml_data=rel_type)
 
 
-def pic_b64encode(url, none='none1'):
-    content = my_file.read(url, 'png', read_type='rb')
+def pic_b64encode(url):
+    content = my_file.read(url, read_type='rb')
     image_rb = base64.b64encode(content)
     return image_rb
 
@@ -844,7 +844,8 @@ def get_imgs(path, pdf_path='', base_dir=''):
                 sp = img.size
                 w, h = px2cm(sp[0]), px2cm(sp[1])
                 rId = '.'.join(i.split('.')[:-1])
-                url = path_file[len(base_dir):]
+                if url.startswith(base_dir):
+                    url = path_file[len(base_dir):]
                 info = {'rId': rId.replace(' ', '_'), 'url': url, 'h': h, 'w': w, 'absolute_url': path_file}
                 infos.append(info)
         else:
