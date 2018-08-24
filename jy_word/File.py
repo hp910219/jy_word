@@ -71,6 +71,7 @@ class File:
         f.close()
 
     def download(self, pkg_parts, file_name):
-        temp_data = self.read("demo.xml")
+        demo_path = os.path.join(os.path.dirname(__file__), 'demo.xml')
+        temp_data = self.read(demo_path)
         temp_data = temp_data.replace('<pkg:part id="pkg_parts"></pkg:part>', pkg_parts)
         self.write(file_name, temp_data)
