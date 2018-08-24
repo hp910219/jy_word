@@ -4,7 +4,10 @@
 import os
 import json
 import xlrd
-import csv
+try:
+    import csv
+except:
+    pass
 __author__ = 'huohuo'
 if __name__ == "__main__":
     pass

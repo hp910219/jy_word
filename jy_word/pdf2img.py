@@ -3,8 +3,11 @@
 # Create Date 2018/6/28 0028
 __author__ = 'huohuo'
 import os
-import PythonMagick
-from PythonMagick import Image
+try:
+    import PythonMagick
+    from PythonMagick import Image
+except:
+    pass
 bgcolor = '#FFFFFF'
 
 

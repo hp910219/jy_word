@@ -728,7 +728,7 @@ def pic_b64encode(url):
     return image_rb
 
 
-def write_pkg_parts(imgs, body,  none='none', show_page=True, title='', **kwargs):
+def write_pkg_parts(imgs, body,  none='none', show_page=True, **kwargs):
     relationship = Relationship()
     relationship.none = none
     p = Paragraph()
@@ -770,6 +770,9 @@ def write_pkg_parts(imgs, body,  none='none', show_page=True, title='', **kwargs
             footer_index = 'footer%d' % index
             pkg_parts += relationship.about_page(footer_index, footers_pkg[index-1])
             relationshipss[1] += relationship.write_rel(footer_index, 'footer')
+    if 'other' in kwargs:
+        pkg_parts += kwargs['other'][0]
+        relationshipss[1] += kwargs['other'][1]
     pkg_parts0 = relationship.document_rels(relationshipss[0], pkg_name='/_rels/', padding=512)
     pkg_parts0 += relationship.document_rels(relationshipss[1])
     pkg_parts0 += relationship.document_pkg_part(body)
@@ -828,30 +831,20 @@ def str_length(contents):
     return n
 
 
-def get_imgs(path, pdf_path='', base_dir=''):
+def get_imgs(path):
     infos = []
     for i in os.listdir(path):
         path_file = os.path.join(path, i)
         if os.path.isfile(path_file):
-            if i.endswith('.pdf'):
-                i = i.replace('.pdf', '.png')
-                out_path = os.path.join(pdf_path, i)
-                pdf2img(path_file, out_path=out_path)
-                path_file = out_path
-                # print i, path_file, path
             if is_img(i):
                 img = Image.open(path_file)
                 sp = img.size
                 w, h = px2cm(sp[0]), px2cm(sp[1])
                 rId = '.'.join(i.split('.')[:-1])
-                if path_file.startswith(base_dir):
-                    url = path_file[len(base_dir):]
-                else:
-                    url = path_file
-                info = {'rId': rId.replace(' ', '_'), 'url': url, 'h': h, 'w': w, 'absolute_url': path_file}
+                info = {'rId': rId.replace(' ', '_'), 'url': path_file, 'h': h, 'w': w, 'absolute_url': path_file}
                 infos.append(info)
         else:
-            infos1 = get_imgs(path_file, pdf_path, base_dir)
+            infos1 = get_imgs(path_file)
             infos += infos1
     return infos
 
