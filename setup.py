@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='jy-word',
-    version='1.12',
+    version='1.17',
     keywords=('word', 'test'),
     description='generate word',
     license='MIT License',
@@ -16,6 +16,7 @@ setup(
     packages=find_packages(exclude=['test']),
     # 需要安装的依赖
     install_requires=['pillow'],
+    # data_files=[('demo', ['demo.xml'])]
 )
 
 if __name__ == "__main__":

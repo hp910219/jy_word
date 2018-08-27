@@ -4,6 +4,7 @@
 import os
 import json
 import xlrd
+from demo_xml import demo_xml
 try:
     import csv
 except:
@@ -71,7 +72,5 @@ class File:
         f.close()
 
     def download(self, pkg_parts, file_name):
-        demo_path = os.path.join(os.path.dirname(__file__), 'demo.xml')
-        temp_data = self.read(demo_path)
-        temp_data = temp_data.replace('<pkg:part id="pkg_parts"></pkg:part>', pkg_parts)
+        temp_data = demo_xml.replace('<pkg:part id="pkg_parts"></pkg:part>', pkg_parts)
         self.write(file_name, temp_data)

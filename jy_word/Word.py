@@ -491,7 +491,20 @@ class Table:
         self.test = ''
 
     def write(self, trs='', ws=[], tblBorders=['top', 'left', 'bottom', 'right'], jc='center', bdColor='auto', **kwargs):
-        tblPr = '<w:tblPr><w:tblW w:w="%d" w:type="dxa"/><w:jc w:val="%s"/>' % (sum(ws), jc)
+        tblPr = '<w:tblPr>'
+        if 'tblp' in kwargs:
+            tblPr += '<w:tblpPr '
+            if 'leftFromText' in kwargs:
+                tblPr += 'w:leftFromText="%d" ' % int(kwargs['leftFromText'] * 567)
+            if 'rightFromText' in kwargs:
+                tblPr += 'w:rightFromText="%d" ' % int(kwargs['rightFromText'] * 567)
+            tblPr += ' w:vertAnchor="text" w:horzAnchor="page" '
+            if 'tblpX'in kwargs:
+                tblPr += 'w:tblpX="%d" ' % int(kwargs['tblpX'] * 567)
+            if 'tblpY'in kwargs:
+                tblPr += 'w:tblpY="%d" ' % int(kwargs['tblpY'] * 567)
+            tblPr += '/>'
+        tblPr += '<w:tblW w:w="%d" w:type="dxa"/><w:jc w:val="%s"/>' % (sum(ws), jc)
         if 'ind' in kwargs:
             tblPr += '<w:tblInd w:w="%d" w:type="dxa"/>' % (int(kwargs['ind'] * 567))
         border_size = 4
