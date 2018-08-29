@@ -263,23 +263,26 @@ class SDT:
 
 
 class Run:
-    def __init__(self, img_info_path=''):
+    def __init__(self, img_info_path='', family='', family_en='Times New Roman', familyTheme = 'minorEastAsia'):
         self.test = 'hello word'
-        self.familyTheme = 'minorEastAsia'
-        self.family_en = 'Times New Roman'
-        self.family = ''
+        self.familyTheme = familyTheme
+        self.family_en = family_en
+        self.family = family
         self.img_info_path = img_info_path
 
     def text(self, content, size=10.5, weight=0, underline='', space=False, wingdings=False, windChar='F09E',
              vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='', szCs=0, lang='', noProof=False):
         # https://www.jb51.net/web/560864.html
         content = str(content).replace("<", "&lt;").replace(">", "&gt;").replace('&', '&amp;')
-        rFonts = '<w:rFonts w:ascii="' + self.family_en
+        rFonts = '<w:rFonts w:ascii="%s" ' + self.family_en
         if self.family == '':
-            rFonts += '" w:eastAsiaTheme="' + self.familyTheme
+            rFonts += 'w:eastAsiaTheme="%s" ' % self.familyTheme
         else:
-            rFonts += '" w:eastAsia="%s' % self.family
-        rFonts += '" w:hAnsi="' + self.family_en + '" w:cs="Times New Roman"/>'
+            rFonts += 'w:eastAsia="%s" ' % self.family
+        if self.family_en != '':
+            rFonts += 'w:hAnsi="%s" w:cs="%s"/>' % (self.family_en, self.family_en)
+        else:
+            rFonts += 'w:hAnsi="%s" w:hint="eastAsia"/>' % self.family
         sz = '<w:sz w:val="%d"/>' % int(size * 2)
         if szCs != 0:
             sz += '<w:szCs w:val="%d"/>' % int(szCs)
