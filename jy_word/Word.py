@@ -3,7 +3,6 @@
 
 import base64
 from PIL import Image
-from pdf2img import pdf2img
 import re
 import os
 from File import File
@@ -217,10 +216,13 @@ class HyperLink:
     def __init__(self):
         self.a = ''
 
-    def write(self, index, content, page):
+    def write(self, index, content='', page=1, **kwargs):
         r = Run()
         text = '<w:hyperlink w:anchor="_Toc%d" w:history="1">' % index
-        text += r.style(content)
+        if 'r_content' not in kwargs:
+            text += r.style(content)
+        else:
+            text += kwargs['r_content']
         text += r.tab()
         text += r.fldChar('begin')
         text += r.instr_text(' PAGEREF _Toc%d \h ' % index, space=True)
@@ -273,16 +275,15 @@ class Run:
     def text(self, content, size=10.5, weight=0, underline='', space=False, wingdings=False, windChar='F09E',
              vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='', szCs=0, lang='', noProof=False):
         # https://www.jb51.net/web/560864.html
-        content = str(content).replace("<", "&lt;").replace(">", "&gt;").replace('&', '&amp;')
-        rFonts = '<w:rFonts w:ascii="%s" ' + self.family_en
+        content = str(content).replace("<", "＜").replace(">", "＞").replace('&', '＆')
+        rFonts = '<w:rFonts w:ascii="%s" ' % (self.family if self.family_en == '' else self.family_en)
         if self.family == '':
             rFonts += 'w:eastAsiaTheme="%s" ' % self.familyTheme
         else:
             rFonts += 'w:eastAsia="%s" ' % self.family
         if self.family_en != '':
-            rFonts += 'w:hAnsi="%s" w:cs="%s"/>' % (self.family_en, self.family_en)
-        else:
-            rFonts += 'w:hAnsi="%s" w:hint="eastAsia"/>' % self.family
+            rFonts += 'w:hAnsi="%s" w:cs="%s"' % (self.family_en, self.family_en)
+        rFonts += '/>'
         sz = '<w:sz w:val="%d"/>' % int(size * 2)
         if szCs != 0:
             sz += '<w:szCs w:val="%d"/>' % int(szCs)
@@ -417,7 +418,7 @@ class Run:
         run += picPr
 
         run += '</pic:nvPicPr><pic:blipFill>'
-        run += '<a:blip r:embed="rId%s"' % rId.capitalize()
+        run += '<a:blip r:embed="rId%s"' % rId.lstrip('rId').capitalize()
         if text_wrapping != 'inline':
             run += ' cstate="print"><a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">'
             run += '<a14:useLocalDpi val="0" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/>'
@@ -435,137 +436,56 @@ class Run:
         run += '</wp:%s></w:drawing></w:r>' % text_wrapping
         return run
 
-    def radius(self, **kwargs):
-        string = '<mc:AlternateContent><mc:Choice Requires="wps">'
-        string += '<w:drawing>'
-        string += '<wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251663360" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1" wp14:anchorId="4B4CC05C" wp14:editId="5A7C6AC1">'
-        string += '<wp:simplePos x="0" y="0"/>'
-        relativeFrom = ['column', 'paragraph'] if 'relativeFrom' not in kwargs else kwargs['relativeFrom']
-        posOffset = [0, 0] if 'relativeFrom' not in kwargs else kwargs['relativeFrom']
-        '''
-                                                        <wp:positionH relativeFrom="column">
-                                                            <wp:posOffset>-17145</wp:posOffset>
-                                                        </wp:positionH>
-                                                        <wp:positionV relativeFrom="paragraph">
-                                                            <wp:posOffset>266699</wp:posOffset>
-                                                        </wp:positionV>
-                                                        <wp:extent cx="1638300" cy="504825"/>
-                                                        <wp:effectExtent l="0" t="0" r="19050" b="28575"/>
-                                                        <wp:wrapNone/>
-                                                        <wp:docPr id="4" name="圆角矩形 4"/>
-                                                        <wp:cNvGraphicFramePr/>
-                                                        <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
-                                                            <a:graphicData uri="http://schemas.microsoft.com/office/word/2010/wordprocessingShape">
-                                                                <wps:wsp>
-                                                                    <wps:cNvSpPr/>
-                                                                    <wps:spPr>
-                                                                        <a:xfrm>
-                                                                            <a:off x="0" y="0"/>
-                                                                            <a:ext cx="1638300" cy="504825"/>
-                                                                        </a:xfrm>
-                                                                        <a:prstGeom prst="roundRect">
-                                                                            <a:avLst>
-                                                                                <a:gd name="adj" fmla="val 29412"/>
-                                                                            </a:avLst>
-                                                                        </a:prstGeom>
-                                                                        <a:solidFill>
-                                                                            <a:srgbClr val="92D050"/>
-                                                                        </a:solidFill>
-                                                                        <a:ln>
-                                                                            <a:solidFill>
-                                                                                <a:srgbClr val="92D050"/>
-                                                                            </a:solidFill>
-                                                                        </a:ln>
-                                                                        <a:effectLst>
-                                                                            <a:softEdge rad="0"/>
-                                                                        </a:effectLst>
-                                                                    </wps:spPr>
-                                                                    <wps:style>
-                                                                        <a:lnRef idx="2">
-                                                                            <a:schemeClr val="accent1">
-                                                                                <a:shade val="50000"/>
-                                                                            </a:schemeClr>
-                                                                        </a:lnRef>
-                                                                        <a:fillRef idx="1">
-                                                                            <a:schemeClr val="accent1"/>
-                                                                        </a:fillRef>
-                                                                        <a:effectRef idx="0">
-                                                                            <a:schemeClr val="accent1"/>
-                                                                        </a:effectRef>
-                                                                        <a:fontRef idx="minor">
-                                                                            <a:schemeClr val="lt1"/>
-                                                                        </a:fontRef>
-                                                                    </wps:style>
-                                                                    <wps:txbx>
-                                                                        <w:txbxContent>
-                                                                            <w:p w:rsidR="006320B1" w:rsidRDefault="006320B1" w:rsidP="006320B1">
-                                                                                <w:pPr>
-                                                                                    <w:jc w:val="center"/>
-                                                                                </w:pPr>
-                                                                                <w:r>
-                                                                                    <w:rPr>
-                                                                                        <w:rFonts w:hint="eastAsia"/>
-                                                                                    </w:rPr>
-                                                                                    <w:t>圆角</w:t>
-                                                                                </w:r>
-                                                                                <w:r>
-                                                                                    <w:rPr>
-                                                                                        <w:rFonts w:hint="eastAsia"/>
-                                                                                    </w:rPr>
-                                                                                    <w:t>2</w:t>
-                                                                                </w:r>
-                                                                            </w:p>
-                                                                        </w:txbxContent>
-                                                                    </wps:txbx>
-                                                                    <wps:bodyPr rot="0" spcFirstLastPara="0" vertOverflow="overflow" horzOverflow="overflow" vert="horz" wrap="square" lIns="91440" tIns="45720" rIns="91440" bIns="45720" numCol="1" spcCol="0" rtlCol="0" fromWordArt="0" anchor="ctr" anchorCtr="0" forceAA="0" compatLnSpc="1">
-                                                                        <a:prstTxWarp prst="textNoShape">
-                                                                            <a:avLst/>
-                                                                        </a:prstTxWarp>
-                                                                        <a:noAutofit/>
-                                                                    </wps:bodyPr>
-                                                                </wps:wsp>
-                                                            </a:graphicData>
-                                                        </a:graphic>
-                                                        <wp14:sizeRelH relativeFrom="margin">
-                                                            <wp14:pctWidth>0</wp14:pctWidth>
-                                                        </wp14:sizeRelH>
-                                                        <wp14:sizeRelV relativeFrom="margin">
-                                                            <wp14:pctHeight>0</wp14:pctHeight>
-                                                        </wp14:sizeRelV>
-                                                    </wp:anchor>
-                                                </w:drawing>
-                                            </mc:Choice>
-                                            <mc:Fallback>
-                                                <w:pict>
-                                                    <v:roundrect id="圆角矩形 4" o:spid="_x0000_s1027" style="position:absolute;margin-left:-1.35pt;margin-top:21pt;width:129pt;height:39.75pt;z-index:251663360;visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;mso-position-horizontal:absolute;mso-position-horizontal-relative:text;mso-position-vertical:absolute;mso-position-vertical-relative:text;mso-width-percent:0;mso-height-percent:0;mso-width-relative:margin;mso-height-relative:margin;v-text-anchor:middle" arcsize="19275f" o:gfxdata="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&#xA;" fillcolor="#92d050" strokecolor="#92d050" strokeweight="2pt">
-                                                        <v:textbox>
-                                                            <w:txbxContent>
-                                                                <w:p w:rsidR="006320B1" w:rsidRDefault="006320B1" w:rsidP="006320B1">
-                                                                    <w:pPr>
-                                                                        <w:jc w:val="center"/>
-                                                                    </w:pPr>
-                                                                    <w:r>
-                                                                        <w:rPr>
-                                                                            <w:rFonts w:hint="eastAsia"/>
-                                                                        </w:rPr>
-                                                                        <w:t>圆角</w:t>
-                                                                    </w:r>
-                                                                    <w:r>
-                                                                        <w:rPr>
-                                                                            <w:rFonts w:hint="eastAsia"/>
-                                                                        </w:rPr>
-                                                                        <w:t>2</w:t>
-                                                                    </w:r>
-                                                                </w:p>
-                                                            </w:txbxContent>
-                                                        </v:textbox>
-                                                    </v:roundrect>
-                                                </w:pict>
-                                            </mc:Fallback>
-                                        </mc:AlternateContent>
-        :return:
-        '''
-        return string
+    def radius(self, cx, cy, **kwargs):
+        # 1cm = 72 / 2.54 pt 1in = 2.54cm = 25.4 mm = 72pt = 6pc
+        cm2pt = 72 / 2.54
+        cm2xml = 359410
+        ''' <v:path arrowok="t" o:connecttype="custom" o:connectlocs="65089,0;325436,0;390525,65089;390525,953774;377509,966790;13016,966790;0,953774;0,65089;65089,0" o:connectangles="0,0,0,0,0,0,0,0,0"/>
+               '''
+        shape = 'roundrect' if 'shape' not in kwargs else kwargs['shape']
+        run = '<w:r><w:pict><v:%s ' % shape
+        run += 'style="position:%s;' % ('relative' if 'position' not in kwargs else kwargs['position'])
+        run += 'text-align:%s;' % ('left' if 'text-align' not in kwargs else kwargs['text-align'])
+        run += 'width:%.2fpt;' % (cm2pt * cx)
+        run += 'height:%.2fpt;' % (cm2pt * cy)
+        if 'rotation' in kwargs:
+            run += 'rotation:%s;' % kwargs['rotation']
+        run += 'fill'
+        fangxiang = ['top', 'right', 'bottom', 'left']
+        for i in range(4):
+            f = fangxiang[i]
+            for w in ['margin-', '', 'mso-wrap-distance-']:
+                who = w + f
+                run += '%s:%fpt;' % (who, 0 if who not in kwargs else kwargs[who] * cm2pt)
+        run += '''z-index:251663360; visibility:visible;
+                mso-wrap-style:square;
+                mso-width-percent:0;
+                mso-height-percent:0;
+                mso-position-horizontal-relative:text;
+                mso-position-vertical-relative:text;
+                mso-width-percent:0;
+                mso-height-percent:0;
+                mso-width-relative:margin;
+                mso-height-relative:margin;
+                v-text-anchor:middle" '''
+        if 'shape' not in kwargs:
+            run += 'arcsize="19275f" '
+        if 'coordsize' in kwargs:
+            run += 'coordsize="%d,%d" ' % (int(cx * cm2xml), int(cy * cm2xml))
+        if 'path' in kwargs:
+            s = (0.05, 3)
+            path = '"path=m%d,%d,' % (int(s[0] *cm2xml), int(s[1] *cm2xml))
+            path += 'v%d,,' % (int(s[0]/2 * cm2xml))
+            path += 'v%d,,' % (int(s[0] * cm2xml))
+
+            run += 'path="m65089,l325436,v35948,,65089,29141,65089,65089l390525,953774v,7189,-5827,13016,-13016,13016l13016,966790c5827,966790,,960963,,953774l,65089c,29141,29141,,65089,xe" '
+        run += 'fillcolor="%s" ' % '#92d050' if 'fill-color' not in kwargs else kwargs['fill-color']
+        run += 'strokecolor="%s" ' % '#92d050' if 'stroke-color' not in kwargs else kwargs['stroke-color']
+        run += 'strokeweight="%dpt">' % 2
+        if 'para' in kwargs:
+            run += '<v:textbox><w:txbxContent>%s</w:txbxContent></v:textbox>' % kwargs['para']
+        run += '</v:%s></w:pict></w:r>' % shape
+        return run
 
     def instr_text(self, text='', space=False):
         space1 = ''
@@ -991,7 +911,9 @@ def get_imgs(path):
                 w, h = px2cm(sp[0]), px2cm(sp[1])
                 rId = '.'.join(i.split('.')[:-1])
                 info = {'rId': rId.replace(' ', '_'), 'url': path_file, 'h': h, 'w': w, 'absolute_url': path_file}
-                infos.append(info)
+                is_exists = len(filter(lambda x: x['rId'] == info['rId'], infos))
+                if is_exists == 0:
+                    infos.append(info)
         else:
             infos1 = get_imgs(path_file)
             infos += infos1
