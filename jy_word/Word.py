@@ -243,10 +243,10 @@ class SDT:
         text = r.fldChar('begin')
         text += r.instr_text('PAGE   \* MERGEFORMAT')
         text += r.fldChar('separate')
-        text += r.text(1, noProof=True, lang='zh-CN')
+        text += r.text(1, weight=0, size=9)
         text += r.fldChar('end')
         p = Paragraph()
-        para = p.write(p.set(pStyle='a5', jc='center'), text)
+        para = p.write(p.set(jc='center'), text)
         sdt = '<w:sdt>'
         sdt += '''
                 <w:sdtPr>
@@ -479,8 +479,8 @@ class Run:
             path += 'v%d,,' % (int(s[0] * cm2xml))
 
             run += 'path="m65089,l325436,v35948,,65089,29141,65089,65089l390525,953774v,7189,-5827,13016,-13016,13016l13016,966790c5827,966790,,960963,,953774l,65089c,29141,29141,,65089,xe" '
-        run += 'fillcolor="%s" ' % '#92d050' if 'fill-color' not in kwargs else kwargs['fill-color']
-        run += 'strokecolor="%s" ' % '#92d050' if 'stroke-color' not in kwargs else kwargs['stroke-color']
+        run += 'fillcolor="%s" ' % ('#92d050' if 'fill-color' not in kwargs else kwargs['fill-color'])
+        run += 'strokecolor="%s" ' % ('#92d050' if 'stroke-color' not in kwargs else kwargs['stroke-color'])
         run += 'strokeweight="%dpt">' % 2
         if 'para' in kwargs:
             run += '<v:textbox><w:txbxContent>%s</w:txbxContent></v:textbox>' % kwargs['para']
@@ -687,8 +687,8 @@ class Tc:
         return tc
 
     def set(self, w=0, vMerge='', tcBorders=['top', 'bottom'], gridSpan=0, vAlign='center', color="auto", fill='auto', **kwargs):
-        # if w < 100:
-        #     w = int(w * 567)
+        if w < 30:
+            w = int(w * 567)
         #     print w
         tcBorders_str = ''
         line_type = 'single'
