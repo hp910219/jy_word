@@ -265,12 +265,13 @@ class SDT:
 
 
 class Run:
-    def __init__(self, img_info_path='', family='', family_en='Times New Roman', familyTheme = 'minorEastAsia'):
+    def __init__(self, img_info_path='', family='', family_en='Times New Roman', familyTheme = 'minorEastAsia', color='auto'):
         self.test = 'hello word'
         self.familyTheme = familyTheme
         self.family_en = family_en
         self.family = family
         self.img_info_path = img_info_path
+        self.color = color
 
     def text(self, content, size=10.5, weight=0, underline='', space=False, wingdings=False, windChar='F09E',
              vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='', szCs=0, lang='', noProof=False):
@@ -294,8 +295,7 @@ class Run:
             weight_str = "<w:b/><w:bCs/>"
         if underline != '':
             uuu = '<w:u w:val="%s"/>' % underline
-        if color != '':
-            color = '<w:color w:val="%s"/>' % color
+        color = '<w:color w:val="%s"/>' % (self.color if color == '' else color)
         if vertAlign == 'top':
             vertAlign = '<w:vertAlign w:val="superscript"/>'
         elif vertAlign == 'bottom':
