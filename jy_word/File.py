@@ -4,6 +4,7 @@
 import os
 import json
 import xlrd
+import chardet
 from demo_xml import demo_xml
 try:
     import csv
@@ -27,11 +28,16 @@ class File:
             data = xlrd.open_workbook(url)
             return data.sheet_by_name(sheet_name)
         f = open(url, read_type)
+
+        text = f.read()
+        f.close()
         if file_type in ['csv', 'tsv'] or 'sep' in kwargs:
+            encoding = chardet.detect(text)['encoding']
             sep = ',' if file_type == 'csv' else '\t'
             if 'sep' in kwargs:
                 sep = kwargs['sep']
             delimiter = {'delimiter': sep}
+            f = open(url, read_type)
             csv.register_dialect('my_dialect', **delimiter)
             cons = csv.reader(f, 'my_dialect')
             items = []
@@ -40,15 +46,12 @@ class File:
                 if to_json:
                     item = {}
                     for i in range(len(keys)):
-                        item[keys[i]] = c[i]
+                        item[keys[i]] = c[i].decode(encoding).encode('utf-8')
                     items.append(item)
                 else:
-                    items.append(c)
+                    items.append([x.decode(encoding).encode('utf-8') for x in c])
             csv.unregister_dialect('my_dialect')
             return items
-        else:
-            text = f.read()
-        f.close()
         if file_type == 'json':
             return json.loads(text)
         return text
