@@ -24,11 +24,14 @@ class File:
     def read(self, file_name, sheet_name='', read_type='r', dict_name='', to_json=True, **kwargs):
         file_type = file_name.split('.')[-1]
         url = os.path.join(self.base_dir, dict_name, file_name)
+        if os.path.exists(url) is False:
+            print 'File not exists, %s. Please check.' % url
+            return None
         if file_type in ['xlsx', 'xls']:
             data = xlrd.open_workbook(url)
             return data.sheet_by_name(sheet_name)
-        f = open(url, read_type)
 
+        f = open(url, read_type)
         text = f.read()
         f.close()
         if file_type in ['csv', 'tsv'] or 'sep' in kwargs:

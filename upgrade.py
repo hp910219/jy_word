@@ -42,10 +42,12 @@ if __name__ == "__main__":
     f.close()
 
 
-update_version(1.28)
+update_version(1.29)
 clc_dist()
 os.system('python setup.py sdist check')
 os.system('python setup.py sdist')
+# twine upload dist/*
+# pip install jy-word --upgrade
 # os.system("cmd/c start twine upload dist/*")
 # os.system("pip install jy-word --upgrade")
 # commands.getstatusoutput('python setup.py sdist upload')
