@@ -42,7 +42,7 @@ if __name__ == "__main__":
     f.close()
 
 
-update_version(1.29)
+update_version(1.30)
 clc_dist()
 os.system('python setup.py sdist check')
 os.system('python setup.py sdist')

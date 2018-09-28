@@ -914,7 +914,7 @@ def get_imgs(path):
                 is_exists = len(filter(lambda x: x['rId'] == info['rId'], infos))
                 if is_exists == 0:
                     infos.append(info)
-        else:
+        elif os.path.isdir(path_file):
             infos1 = get_imgs(path_file)
             infos += infos1
     return infos
@@ -948,18 +948,3 @@ def px2cm(h):
     # 1px = 0.4cm
     h = float(h) * 0.04  # 像素换算为厘米
     return h
-
-
-def crop_img(input_url, output_url):
-    img = Image.open(input_url)
-    sp = img.size
-    w, h = sp[0], sp[1]
-    region = (0, h/3, w, h/3 * 2)
-    if 'pie' in input_url:
-        region = (w/3 - 60, 320, w / 3 * 2 + 200, h-320)
-    if os.path.exists(output_url):
-        os.remove(output_url)
-    #裁切图片
-    cropImg = img.crop(region)
-    #保存裁切后的图片
-    cropImg.save(output_url)
