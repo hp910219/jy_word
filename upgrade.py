@@ -3,6 +3,7 @@
 # Create Date 2018/8/23 0023
 __author__ = 'huohuo'
 import os
+from git import Repo
 
 
 def clc_dist():
@@ -39,10 +40,18 @@ if __name__ == "__main__":
     pass''' % version
     f = open('setup.py', 'w')
     f.write(s)
-    f.close()
 
 
-update_version(1.30)
+def upload_code():
+    repo = Repo('.git')
+    remote = repo.remote()
+    remote.pull()
+    repo.commit('master')
+    remote.push()
+
+
+# upload_code()
+update_version(1.32)
 clc_dist()
 os.system('python setup.py sdist check')
 os.system('python setup.py sdist')

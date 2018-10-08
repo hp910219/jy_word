@@ -337,6 +337,8 @@ class Run:
 
     def picture(self, cx=0, cy=0, rId='', relativeFrom=['column', 'paragraph'], posOffset=[0, 0], align=['', ''],
                 wrap='tight', text_wrapping='anchor', zoom=1):
+        if rId.startswith('rId'):
+            rId = rId[3:]
         if self.img_info_path:
             img_info = get_img(self.img_info_path, rId)
             if img_info is None:
@@ -418,7 +420,7 @@ class Run:
         run += picPr
 
         run += '</pic:nvPicPr><pic:blipFill>'
-        run += '<a:blip r:embed="rId%s"' % rId.lstrip('rId').capitalize()
+        run += '<a:blip r:embed="rId%s"' % rId.capitalize()
         if text_wrapping != 'inline':
             run += ' cstate="print"><a:extLst><a:ext uri="{28A0092B-C50C-407E-A947-70E740481C1C}">'
             run += '<a14:useLocalDpi val="0" xmlns:a14="http://schemas.microsoft.com/office/drawing/2010/main"/>'
@@ -507,6 +509,31 @@ class Run:
     def style(self, text, val='af8'):
         r = '<w:r><w:rPr><w:rStyle w:val="%s"/><w:rFonts w:eastAsiaTheme="%s"/></w:rPr><w:t>%s</w:t></w:r>' % (val, self.familyTheme, text)
         return r
+
+    def hyperlink(self, index, content='', page=1, **kwargs):
+        text = '<w:hyperlink w:anchor="_Toc%d" w:history="1">' % index
+        if 'r_content' not in kwargs:
+            text += self.text(content, space=True)
+        else:
+            text += kwargs['r_content']
+        text += self.tab()
+        text += self.fldChar('begin')
+        text += self.instr_text(' PAGEREF _Toc%d \h ' % index, space=True)
+        text += self.text('')
+        text += self.fldChar()
+        text += self.text(page)
+        text += self.fldChar('end')
+        text += '</w:hyperlink>'
+        return text
+
+    def cat(self, item):
+        run = ''
+        if item['bm'] == bm_index0:
+            run = self.fldChar('begin')
+            run += self.instr_text('1-3', space=True)
+            run += self.fldChar()
+        run += self.hyperlink(item['bm'], item['title'], item['page'])
+        return run
 
 
 class Set_page:
