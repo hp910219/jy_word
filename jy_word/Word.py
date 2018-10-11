@@ -510,29 +510,27 @@ class Run:
         r = '<w:r><w:rPr><w:rStyle w:val="%s"/><w:rFonts w:eastAsiaTheme="%s"/></w:rPr><w:t>%s</w:t></w:r>' % (val, self.familyTheme, text)
         return r
 
-    def hyperlink(self, index, content='', page=1, **kwargs):
-        text = '<w:hyperlink w:anchor="_Toc%d" w:history="1">' % index
-        if 'r_content' not in kwargs:
-            text += self.text(content, space=True)
-        else:
-            text += kwargs['r_content']
-        text += self.tab()
-        text += self.fldChar('begin')
-        text += self.instr_text(' PAGEREF _Toc%d \h ' % index, space=True)
-        text += self.text('')
-        text += self.fldChar()
-        text += self.text(page)
-        text += self.fldChar('end')
-        text += '</w:hyperlink>'
-        return text
-
     def cat(self, item):
         run = ''
         if item['bm'] == bm_index0:
             run = self.fldChar('begin')
             run += self.instr_text('1-3', space=True)
             run += self.fldChar()
-        run += self.hyperlink(item['bm'], item['title'], item['page'])
+        font_set = {} if 'font_set' not in item else item['font_set']
+        run += '<w:hyperlink w:anchor="_Toc%d" w:history="1">' % item['bm']
+        if 'title' in item:
+            run += self.text(item['title'], space=True, **font_set)
+        if 'run' in item:
+            run += item['run']
+        run += self.tab()
+        run += self.fldChar('begin')
+        run += self.instr_text(' PAGEREF _Toc%d \h ' % item['bm'], space=True)
+        run += self.text('')
+        run += self.fldChar()
+        if 'page' in item:
+            run += self.text(item['page'], **font_set)
+        run += self.fldChar('end')
+        run += '</w:hyperlink>'
         return run
 
 
