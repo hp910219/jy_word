@@ -51,13 +51,17 @@ class Paragraph:
 
         if ind[0] == 'hanging':
             ind_str = '<w:ind w:left="%d" w:%sChars="%d" w:%s="%d"/>' % (ind[1] * 240, ind[0], ind[1] * 100, ind[0], ind[1] * 240)
-        elif ind[0] == 'firstLine':
-            ind_str = '<w:ind w:%sChars="%d" w:%s="%d"/>' % (ind[0], ind[1] * 100, ind[0], ind[1] * 220)
         elif ind == [0, 0]:
             ind_str = ''
         else:
-            iii = ['left', 'right']
             ind_str = '<w:ind '
+            if ind[0] == 'firstLine':
+                ind_str = '<w:ind w:%sChars="%d" w:%s="%d" ' % (ind[0], ind[1] * 100, ind[0], ind[1] * 220)
+                ind = ind[2:]
+                if len(ind) < 2:
+                    ind += [0] * (2 - len(ind))
+            iii = ['left', 'right']
+
             for i in range(0, len(iii)):
                 if (ind[i]) != 0:
                     if type(ind[i]) == str:
@@ -274,7 +278,7 @@ class Run:
         self.color = color
 
     def text(self, content, size=10.5, weight=0, underline='', space=False, wingdings=False, windChar='F09E',
-             vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='', szCs=0, lang='', noProof=False):
+             vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='', szCs=0, lang='', noProof=False, shade=''):
         # https://www.jb51.net/web/560864.html
         content = str(content).replace("<", "＜").replace(">", "＞").replace('&', '＆')
         rFonts = '<w:rFonts w:ascii="%s" ' % (self.family if self.family_en == '' else self.family_en)
@@ -311,6 +315,8 @@ class Run:
             rPr += '<w:noProof/>'
         if lang != '':
             rPr += '<w:lang w:val="zh-CN"/>'
+        if shade != '':
+            rPr += '<w:highlight w:val="%s"/>' % shade
         rPr += '</w:rPr>'
         wt = ''
         if content != '':
@@ -392,7 +398,7 @@ class Run:
             wp14 = '<wp14:sizeRelH relativeFrom="page"><wp14:pctWidth>0</wp14:pctWidth></wp14:sizeRelH>'
             wp14 += '<wp14:sizeRelV relativeFrom="page"><wp14:pctHeight>0</wp14:pctHeight></wp14:sizeRelV>'
         else:
-            wrappp = ''
+            wrappp = '<wp:wrapNone/>'
 
         for i in range(0, len(p)):
             postition += '<wp:%s relativeFrom="%s">' % (p[i], relativeFrom[i])
@@ -402,8 +408,9 @@ class Run:
                 postition += '<wp:posOffset>%d</wp:posOffset></wp:%s>' % (int(posOffset[i] * 359410), p[i])
         run = '<w:r><w:drawing><wp:%s distT="0" distB="0" ' % text_wrapping
         extent_r = 9525
+        behindDoc = 0 if wrap == 'behinddoc' else 1
         if text_wrapping == 'anchor':
-            run += 'distL="114300" distR="114300" simplePos="0" relativeHeight="251658240" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">'
+            run += 'distL="114300" distR="114300" simplePos="0" relativeHeight="251658240" behindDoc="%d" locked="0" layoutInCell="1" allowOverlap="1">' % behindDoc
             run += '<wp:simplePos x="0" y="0"/>'
             run += postition
         elif text_wrapping == 'inline':
@@ -442,8 +449,6 @@ class Run:
         # 1cm = 72 / 2.54 pt 1in = 2.54cm = 25.4 mm = 72pt = 6pc
         cm2pt = 72 / 2.54
         cm2xml = 359410
-        ''' <v:path arrowok="t" o:connecttype="custom" o:connectlocs="65089,0;325436,0;390525,65089;390525,953774;377509,966790;13016,966790;0,953774;0,65089;65089,0" o:connectangles="0,0,0,0,0,0,0,0,0"/>
-               '''
         shape = 'roundrect' if 'shape' not in kwargs else kwargs['shape']
         run = '<w:r><w:pict><v:%s ' % shape
         run += 'style="position:%s;' % ('relative' if 'position' not in kwargs else kwargs['position'])
@@ -459,7 +464,8 @@ class Run:
             for w in ['margin-', '', 'mso-wrap-distance-']:
                 who = w + f
                 run += '%s:%fpt;' % (who, 0 if who not in kwargs else kwargs[who] * cm2pt)
-        run += '''z-index:251663360; visibility:visible;
+        run += 'z-index:%s; ' % (-1 if 'z-index' not in kwargs else kwargs['z-index'])
+        run += '''visibility:visible;
                 mso-wrap-style:square;
                 mso-width-percent:0;
                 mso-height-percent:0;
@@ -470,20 +476,14 @@ class Run:
                 mso-width-relative:margin;
                 mso-height-relative:margin;
                 v-text-anchor:middle" '''
-        if 'shape' not in kwargs:
-            run += 'arcsize="19275f" '
+        radius = 0.05 if 'radius' not in kwargs else kwargs['radius']
+        if radius > 0:
+            run += 'arcsize="%ff" ' % (radius * cm2xml)
         if 'coordsize' in kwargs:
             run += 'coordsize="%d,%d" ' % (int(cx * cm2xml), int(cy * cm2xml))
-        if 'path' in kwargs:
-            s = (0.05, 3)
-            path = '"path=m%d,%d,' % (int(s[0] *cm2xml), int(s[1] *cm2xml))
-            path += 'v%d,,' % (int(s[0]/2 * cm2xml))
-            path += 'v%d,,' % (int(s[0] * cm2xml))
-
-            run += 'path="m65089,l325436,v35948,,65089,29141,65089,65089l390525,953774v,7189,-5827,13016,-13016,13016l13016,966790c5827,966790,,960963,,953774l,65089c,29141,29141,,65089,xe" '
         run += 'fillcolor="%s" ' % ('#92d050' if 'fill-color' not in kwargs else kwargs['fill-color'])
         run += 'strokecolor="%s" ' % ('#92d050' if 'stroke-color' not in kwargs else kwargs['stroke-color'])
-        run += 'strokeweight="%dpt">' % 2
+        run += 'strokeweight="%fpt">' % 0.2
         if 'para' in kwargs:
             run += '<v:textbox><w:txbxContent>%s</w:txbxContent></v:textbox>' % kwargs['para']
         run += '</v:%s></w:pict></w:r>' % shape
@@ -591,7 +591,7 @@ class Table:
         border_size = 4
         if 'border_size' in kwargs:
             border_size = kwargs['border_size']
-        if len(tblBorders) > 0:
+        if len(tblBorders) > 0 or 'insideColor'in kwargs:
             tblPr += '<w:tblBorders>'
             for b in tblBorders:
                 tblPr += '<w:%s w:val="single" w:sz="%d" w:space="0" w:color="%s"/>' % (b, border_size, bdColor)

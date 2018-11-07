@@ -51,7 +51,7 @@ def upload_code():
 
 
 # upload_code()
-update_version(1.33)
+update_version(1.34)
 clc_dist()
 os.system('python setup.py sdist check')
 os.system('python setup.py sdist')
