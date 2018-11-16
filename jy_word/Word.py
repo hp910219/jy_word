@@ -481,9 +481,12 @@ class Run:
             run += 'arcsize="%ff" ' % (radius * cm2xml)
         if 'coordsize' in kwargs:
             run += 'coordsize="%d,%d" ' % (int(cx * cm2xml), int(cy * cm2xml))
-        run += 'fillcolor="%s" ' % ('#92d050' if 'fill-color' not in kwargs else kwargs['fill-color'])
+        if 'fill-color' in kwargs:
+            run += 'fillcolor="%s" ' % kwargs['fill-color']
         run += 'strokecolor="%s" ' % ('#92d050' if 'stroke-color' not in kwargs else kwargs['stroke-color'])
-        run += 'strokeweight="%fpt">' % 0.2
+        run += 'strokeweight="%fpt">' % (0.2 if 'strokeweight' not in kwargs else kwargs['strokeweight'])
+        if 'opacity' in kwargs:
+            run += '<v:fill opacity="%f"/>' % kwargs['opacity']
         if 'para' in kwargs:
             run += '<v:textbox><w:txbxContent>%s</w:txbxContent></v:textbox>' % kwargs['para']
         run += '</v:%s></w:pict></w:r>' % shape

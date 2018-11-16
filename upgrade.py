@@ -43,7 +43,9 @@ if __name__ == "__main__":
 
 
 def upload_code():
-    repo = Repo('.git')
+    print __file__
+    repo = Repo(os.path.dirname(__file__))
+
     remote = repo.remote()
     remote.pull()
     repo.commit('master')
@@ -51,7 +53,7 @@ def upload_code():
 
 
 # upload_code()
-update_version(1.34)
+update_version(1.36)
 clc_dist()
 os.system('python setup.py sdist check')
 os.system('python setup.py sdist')
