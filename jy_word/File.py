@@ -72,11 +72,15 @@ class File:
         url = os.path.join(self.base_dir, file_name)
         f = open(url, "w")
         if file_type == 'json':
-            f.write(json.dumps(data, sort_keys=True, indent=4, ensure_ascii=False))
+            try:
+                f.write(json.dumps(data, sort_keys=True, indent=4, ensure_ascii=False))
+            except:
+                f.write(json.dumps(data, sort_keys=True, indent=4, ensure_ascii=True))
         else:
             f.write(data)
         f.close()
 
     def download(self, pkg_parts, file_name):
         temp_data = demo_xml.replace('<pkg:part id="pkg_parts"></pkg:part>', pkg_parts)
+        temp_data = temp_data.replace('\n', '')
         self.write(file_name, temp_data)
