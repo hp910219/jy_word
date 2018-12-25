@@ -79,8 +79,9 @@ class File:
         else:
             f.write(data)
         f.close()
+        return 5
 
     def download(self, pkg_parts, file_name):
         temp_data = demo_xml.replace('<pkg:part id="pkg_parts"></pkg:part>', pkg_parts)
         temp_data = temp_data.replace('\n', '')
-        self.write(file_name, temp_data)
+        return self.write(file_name, temp_data)
