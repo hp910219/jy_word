@@ -85,3 +85,60 @@ class File:
         temp_data = demo_xml.replace('<pkg:part id="pkg_parts"></pkg:part>', pkg_parts)
         temp_data = temp_data.replace('\n', '')
         return self.write(file_name, temp_data)
+
+    def get_file_list(self, file_type, pre='', postfix=None):
+        file_list = []
+        folder_list = []
+        full_path = os.path.join(self.base_dir, pre)
+        for file_name in os.listdir(full_path):
+            path_file = os.path.join(full_path, file_name)
+            file_dict = {
+                'file_name': file_name,
+                'url': path_file,
+                'dir_path': os.path.dirname(path_file),
+                'full_path': file_name,
+                'relative_path': os.path.relpath(path_file, self.base_dir)
+            }
+            if os.path.isdir(path_file):
+                folder_list.append(file_dict)
+            elif os.path.isfile(path_file):
+                file_dict["type"] = file_type
+                file_dict['file_size'] = self.get_file_size(path_file)
+                is_selected = self.is_selected(file_name, postfix)
+                file_dict['is_selected'] = is_selected
+                if is_selected:
+                    file_list.append(file_dict)
+        folder_list.sort()
+        file_list.sort()
+        return {'data': {'folder': folder_list, 'file': file_list}}
+
+    def get_file_size(self, path_file):
+        try:
+            size = os.path.getsize(path_file)
+        except Exception, e:
+            return '未知'
+        if size > 1024 ** 3:
+            return '%.02fGB' % (float(size) / 1024 ** 3)
+        elif size > 1024 ** 2:
+            return '%.02fMB' % (float(size) / 1024 ** 2)
+        elif size > 1024:
+            return '%0.2fKB' % (float(size) / 1024)
+        else:
+            return '%0.2fB' % (float(size))
+
+    def get_file_item(self, file_name, path_file):
+        return {
+            'file_name': file_name,
+            'url': path_file,
+            'dir_path': os.path.dirname(path_file),
+            'full_path': file_name,
+            'relative_path': os.path.relpath(path_file, self.base_dir)
+        }
+
+    def is_selected(self, file_name, postfix=None):
+        if postfix is None:
+            return True
+        for p in postfix:
+            if file_name.endswith(p):
+                return True
+        return False
