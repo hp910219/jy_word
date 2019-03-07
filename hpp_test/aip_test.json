@@ -1,0 +1,181 @@
+{
+    "data": {
+        "isStructured": true, 
+        "logId": "154839526170831", 
+        "ret": [
+            {
+                "location": {
+                    "height": 18, 
+                    "left": 385, 
+                    "top": 114, 
+                    "width": 83
+                }, 
+                "probability": {
+                    "average": 0.982516, 
+                    "min": 0.818149, 
+                    "variance": 0.002081
+                }, 
+                "word": "2014年01月02日", 
+                "word_name": "date"
+            }, 
+            {
+                "location": {
+                    "height": 18, 
+                    "left": 341, 
+                    "top": 26, 
+                    "width": 74
+                }, 
+                "probability": {
+                    "average": 0.991826, 
+                    "min": 0.87216, 
+                    "variance": 0.000463
+                }, 
+                "word": "CF1458474", 
+                "word_name": "no"
+            }, 
+            {
+                "location": {
+                    "height": 17, 
+                    "left": 145, 
+                    "top": 66, 
+                    "width": 71
+                }, 
+                "probability": {
+                    "average": 0.997573, 
+                    "min": 0.99021, 
+                    "variance": 7e-06
+                }, 
+                "word": "310005032", 
+                "word_name": "case_no"
+            }, 
+            {
+                "location": {
+                    "height": 18, 
+                    "left": 226, 
+                    "top": 26, 
+                    "width": 80
+                }, 
+                "probability": {
+                    "average": 0.991826, 
+                    "min": 0.87216, 
+                    "variance": 0.000463
+                }, 
+                "word": "6035824793", 
+                "word_name": "card_no"
+            }, 
+            {
+                "location": {
+                    "height": 19, 
+                    "left": 373, 
+                    "top": 50, 
+                    "width": 17
+                }, 
+                "probability": {
+                    "average": 0.997708, 
+                    "min": 0.988668, 
+                    "variance": 1.5e-05
+                }, 
+                "word": "男", 
+                "word_name": "sex"
+            }, 
+            {
+                "location": {
+                    "height": 19, 
+                    "left": 98, 
+                    "top": 88, 
+                    "width": 203
+                }, 
+                "probability": {
+                    "average": 0.980628, 
+                    "min": 0.74172, 
+                    "variance": 0.003082
+                }, 
+                "word": "足部软组织损伤(淤血阻络、湿阻经络", 
+                "word_name": "diagnose"
+            }, 
+            {
+                "location": {
+                    "height": 15, 
+                    "left": 68, 
+                    "top": 45, 
+                    "width": 25
+                }, 
+                "probability": {
+                    "average": 0.998769, 
+                    "min": 0.99519, 
+                    "variance": 4e-06
+                }, 
+                "word": "王程", 
+                "word_name": "patient_name"
+            }, 
+            {
+                "word": "", 
+                "word_name": "patient_no"
+            }, 
+            {
+                "location": {
+                    "height": 19, 
+                    "left": 406, 
+                    "top": 70, 
+                    "width": 69
+                }, 
+                "probability": {
+                    "average": 0.974791, 
+                    "min": 0.718157, 
+                    "variance": 0.004757
+                }, 
+                "word": "门诊(专家", 
+                "word_name": "case_type"
+            }, 
+            {
+                "location": {
+                    "height": 19, 
+                    "left": 110, 
+                    "top": 109, 
+                    "width": 88
+                }, 
+                "probability": {
+                    "average": 0.998042, 
+                    "min": 0.992548, 
+                    "variance": 4e-06
+                }, 
+                "word": "13902941471", 
+                "word_name": "tel"
+            }, 
+            {
+                "location": {
+                    "height": 18, 
+                    "left": 67, 
+                    "top": 26, 
+                    "width": 83
+                }, 
+                "probability": {
+                    "average": 0.991826, 
+                    "min": 0.87216, 
+                    "variance": 0.000463
+                }, 
+                "word": "保险(在职)", 
+                "word_name": "fee_type"
+            }, 
+            {
+                "location": {
+                    "height": 19, 
+                    "left": 434, 
+                    "top": 50, 
+                    "width": 27
+                }, 
+                "probability": {
+                    "average": 0.997708, 
+                    "min": 0.988668, 
+                    "variance": 1.5e-05
+                }, 
+                "word": "46岁", 
+                "word_name": "age"
+            }
+        ], 
+        "scores": 1.0, 
+        "templateSign": "75728a7d5fbaa201049f6198f651305f"
+    }, 
+    "error_code": 0, 
+    "error_msg": ""
+}

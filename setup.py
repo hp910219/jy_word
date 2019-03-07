@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='jy-word',
-    version='1.45',
+    version='1.46',
     keywords=('word', 'test'),
     description='generate word',
     license='MIT License',
