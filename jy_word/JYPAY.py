@@ -99,7 +99,7 @@ class JYWXPAY:
             "notify_url": order_info.get('notify_url'), #支付成功的回调地址
             "openid": order_info.get('openid'), #用户标识
             "out_trade_no": order_info.get('out_trade_no'), #商户订单号
-            "spbill_create_ip": order_info.get('cip'),  #客户端终端IP
+            "spbill_create_ip": order_info.get('cip'),  #客户端终端 request.remote_addr
             "total_fee": str(int((float(price) * 100))),   #总金额 单位为分
             "trade_type": 'JSAPI'  #交易类型 小程序取值如下：JSAPI
         }
@@ -273,7 +273,7 @@ if __name__ == "__main__":
     # # out_trade_no = '20190221164954776532'
     # # print query_alipay(out_trade_no)
     # # print query_wxorder(out_trade_no)
-    # # print str2md5('hpp_test:hpp.123456')
+    # # print str2md5('HPPTESTPYTHONPROJECT:hpp.123456')
     # # get_order_tsinghua('test1')
     #
     # # query_order_tsinghua('tcdf100862201903050929598090003')
