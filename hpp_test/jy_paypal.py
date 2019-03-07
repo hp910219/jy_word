@@ -5,8 +5,8 @@ __author__ = 'huohuo'
 import requests
 import paypalrestsdk
 
-client_id = 'AdwrALdzDVRdBWQ5-6njtkabF2OPyRAJAFTu-4TKOsLUVTHngoPCTXcRTy2NTFYoYyReG24luCSnfzkK'
-secret = 'ELDs9GkuekdDBWO6QyCsUPvRNG5dN-tRvgK4uik940T08IByBk_X98oQ4jClw7BuFsv5KComts4EJ7eO'
+client_id = 'client_id'
+secret = 'secret'
 grant_type = 'client_credentials'
 api_hosts = 'http://fa-online.tsinghua.edu.cn/sftp/requestPayAction!payment.action'
 rq_pay = {
