@@ -168,16 +168,15 @@ def send_msg_by_mns(message, **kwargs):
     :return:
     """
     use_mns = False
-    MNS_CONF_PATH = ''
-    message += '【时间】：%s' % format_time()
-    if 'MNS_CONF_PATH' in os.environ:
-        MNS_CONF_PATH = os.environ['MNS_CONF_PATH']
+    MNS_CONF_PATH = os.environ.get('MNS_CONF_PATH')
+    if MNS_CONF_PATH is not None:
         if os.path.exists(MNS_CONF_PATH):
             use_mns = True
         else:
             message = '\n【MNS_CONF_FILE】： %s not exists.\n\n%s\n' % (MNS_CONF_PATH, message)
 
     if use_mns:
+        message += '\n【时间】：%s' % format_time()
         mns_server = MNSServerManager(conf_path=MNS_CONF_PATH)
         mns_topic = mns_server.get_topic("JYWaring")
         mns_topic.publish_message(message, "前端错误", is_thread=False)

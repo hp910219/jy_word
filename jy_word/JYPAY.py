@@ -83,8 +83,7 @@ class JYWXPAY:
         order_info['appid'] = self.app_id
         order_info['mch_id'] = self.Mch_id
         order_info['nonce_str'] = getNonceStr()
-        #获取签名
-        order_info['sign'] = self.format_sign(order_info)
+        order_info['sign'] = self.format_sign(order_info) #获取签名
         body_data = dict_to_xml(order_info)  # 拿到封装好的xml数据
         #请求微信接口下单
         respone = requests.post(url, body_data.encode("utf-8"), headers={'Content-Type': 'application/xml'})
@@ -134,6 +133,38 @@ class JYWXPAY:
             msg = content.get('return_msg')
         # print status, msg
         return {'status': status, 'message': msg, 'order_info': content}
+
+
+class JYWX:
+
+    def __init__(self, app_id, app_secret):
+        self.app_id = app_id
+        self.app_secret = app_secret
+        self.gateway = 'https://api.weixin.qq.com/cgi-bin/'
+
+    def wx_request(self, method, action, params=None, json=None, headers=None):
+        if headers is None:
+            headers = {'Content-Type': 'application/json'}
+        res = requests.request(method, '%s%s' % (self.gateway, action), params=params, json=json, headers=headers)
+        if res.status_code == 200:
+            return res.json()
+        return None
+
+
+    def get_token(self):
+        rq = {'grant_type': 'client_credential', 'appid': self.app_id, 'secret': self.app_secret}
+        return self.wx_request('GET', 'token', params=rq)
+
+    def send_msg(self):
+        token = self.get_token().get('access_token')
+        rq = {
+            "touser": "ochiws76uvCapRK11chSqJxp5nZM",
+            "msgtype": 'text',
+            "text": {"content": 'hello xiaohuo'}
+        }
+        if token is not None:
+            return self.wx_request('POST', 'message/custom/send?access_token=%s' % token, json=rq)
+        return None
 
 
 # ===================支付宝==================
@@ -256,9 +287,9 @@ class JYTSINGHUAPAY:
         #     't_bill_date': datetime.datetime.now().strftime('%Y%m%d'),
         # }
         url_info = self.get_url('requestBillAction.action', rq)
-        # res = requests.request('get', url_info.get('url'))
-        # if res.status_code == 200:
-        #     print res.text
+        res = requests.request('get', url_info.get('url'))
+        if res.status_code == 200:
+            return res.text
         return url_info
 
 
@@ -277,5 +308,8 @@ if __name__ == "__main__":
     # # get_order_tsinghua('test1')
     #
     # # query_order_tsinghua('tcdf100862201903050929598090003')
-    # print down_bill_tsinghua({'t_item': 100862, 't_bill_date': '20190305'})
+    ts = JYTSINGHUAPAY('2025', 'fb097338e13afb1f')
+    print ts.down_bill({'t_item': 100862, 't_bill_date': '20190305'})
     # # print len(out_trade_no)
+    # jy_wx = JYWX('wx78f7ae678bcfbfd1', 'f836cc553408bf9ff400e800deb41713')
+    # print jy_wx.send_msg()

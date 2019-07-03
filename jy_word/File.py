@@ -49,7 +49,8 @@ class File:
                 if to_json:
                     item = {}
                     for i in range(len(keys)):
-                        item[keys[i]] = c[i].decode(encoding).encode('utf-8')
+                        k = keys[i].decode(encoding).encode('utf-8')
+                        item[k] = c[i].decode(encoding).encode('utf-8')
                     items.append(item)
                 else:
                     items.append([x.decode(encoding).encode('utf-8') for x in c])

@@ -40,6 +40,7 @@ if __name__ == "__main__":
     pass''' % version
     f = open('setup.py', 'w')
     f.write(s)
+    f.close()
 
 
 def upload_code():
@@ -53,7 +54,7 @@ def upload_code():
 
 
 # upload_code()
-update_version(1.47)
+update_version(1.49)
 clc_dist()
 os.system('python setup.py sdist check')
 os.system('python setup.py sdist')
