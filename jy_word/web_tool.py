@@ -8,6 +8,7 @@ import logging
 import time
 import socket
 import zipfile
+import shutil
 import re
 import sys
 reload(sys)
@@ -65,11 +66,12 @@ def int2ch(i):
     return chs[i]
 
 
-def zip_dir(lodurl, dirname, zipfilename):
-    filelist = []
+def zip_dir(lodurl, dirname, zipfilename, fileList=None):
+
+    file_list = fileList or []
     #Check input ...
     fulldirname = dirname
-    fullzipfilename = lodurl + zipfilename
+    fullzipfilename = os.path.join(lodurl, zipfilename)
     print "Start to zip %s to %s ..." % (fulldirname, fullzipfilename)
     if not os.path.exists(fulldirname):
         print "Dir/File %s is not exist, Press any key to quit..." % fulldirname
@@ -91,27 +93,25 @@ def zip_dir(lodurl, dirname, zipfilename):
 
     #Get file(s) to zip ...
     if os.path.isfile(dirname):
-        filelist.append(dirname)
+        file_list.append(dirname)
         dirname = os.path.dirname(dirname)
     else:
         #get all file in directory
-        for root, dirlist, files in os.walk(dirname):
-            for filename in files:
-                filelist.append(os.path.join(root,filename))
+        for filename in os.walk(dirname):
+            file_list.append(os.path.join(dirname, filename))
 
     #Start to zip file ...
     destZip = zipfile.ZipFile(fullzipfilename, "w")
     i = 0
-    for eachfile in filelist:
+    for eachfile in file_list:
         destfile = eachfile[len(dirname):]
         print "Zip file %s..." % destfile
         destZip.write(eachfile, destfile)
         i += 1
     destZip.close()
-    if i == len(filelist):
+    if i == len(file_list):
         return 5
-    else:
-        return 3
+    return 3
 
 
 def roman_to_int(s):
@@ -242,6 +242,11 @@ def get_host(web_port, print_msg=''):
     return {'ip': host, 'name': host_name, 'port': web_port, 'url': url}
 
 
+def killport(port):
+    command='''''kill -9 $(netstat -nlp | grep :'''+str(port)+''''' | awk '{print $7}' | awk -F"/" '{ print $1 }')'''
+    os.system(command)
+
+
 def get_value(disease_item, key, null=None):
     if isinstance(disease_item, dict):
         if key in disease_item:
@@ -276,6 +281,87 @@ def get_first_name(data):
         elif sex in [2, u'女']:
             name = surname + u"女士"
     return name
+
+
+def tcm_api():
+    # 配置文件
+    conf = read_conf()
+    ports = conf.get('ports')
+    endpoint = conf.get('endpoint')
+    env = conf.get('env')
+    # 请求相关
+    method = request.method
+    data = request.args if method == 'GET' else request.json
+    url = request.headers.get('API-URL')
+    api_service = request.headers.get('API-SERVICE')
+    success_status = request.headers.get('SUCCESS-STATUS')
+    api_method = request.headers.get('API-METHOD')
+    if api_method is not None:
+        method = api_method
+    auth = request.headers.get('Authorization')
+    # start
+    error_message = ''
+    response_data = None
+    status = None
+    if isinstance(conf, str):
+        error_message = conf
+    if ports is None:
+        error_message = 'No ports found in config.conf'
+    elif api_service not in ports:
+        error_message = u'暂无此服务：%s. 目前服务有：%s\n' % (api_service, ports.keys())
+    else:
+        api_url = endpoint + ':' + ports[api_service] + url
+        request_params = {'json': data} if method != 'GET' else {'params': data}
+        headers = {'Content-Type': 'application/json'}
+        if auth:
+            headers['Authorization'] = auth
+        request_params['headers'] = headers
+        try:
+            response = requests.request(method, api_url, **request_params)
+        except Exception, e:
+            error_message = '%s\n' % str(e)
+            response = None
+        if response is not None:
+            if response.status_code != 200:
+                error_message = "%s %s %d %s\n" % (api_url, "POST", response.status_code, response.text)
+            else:
+                response_data = response.json()
+                status = response_data.get('status')
+        error_message += u'【请求服务】：%s\n' % api_service
+        error_message += u'【api】：%s\n' % api_url
+    error_message += u'【访问ip】：%s\n' % request.remote_addr
+    error_message += u'【访问地址】：%s\n' % request.url
+    error_message += u'【请求方式】：%s\n' % method
+    error_message += u'【请求数据】：%s\n' % json.dumps(data)
+    if status is not None:
+        error_message += u'【状态码】:%d\n' % status
+    error_message += u'【返回数据】：%s\n' % json.dumps(response_data)
+    try:
+        sss = base64.b64decode(auth).decode()
+        error_message += u'【用户名】：%s\n' % sss.split(':')[0]
+    except:
+        error_message += ''
+    # if self.is_print:
+    #     print error_message
+    if 'success' not in error_message.lower():
+        try:
+            send_msg_by_dd(error_message, env=env)
+        except:
+            print(error_message)
+    return jsonify(response_data)
+
+
+def del_file(path):
+    if os.path.exists(path) is False:
+        return 'path not exists, %s' % path
+    if os.path.isfile(path):
+        os.remove(path)
+        return True
+    try:
+        shutil.rmtree(path)
+    except:
+        os.rmdir(path)
+
 
 
 if __name__ == "__main__":

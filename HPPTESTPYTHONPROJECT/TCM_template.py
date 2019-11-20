@@ -3,8 +3,8 @@
 # Create Date 2019/5/28 0028
 __author__ = 'huohuo'
 from jy_word.File import File
+from jy_word.web_tool import format_time
 import uuid
-import json
 my_file = File()
 
 
@@ -21,7 +21,6 @@ for template in templates:
     template['template'] = get_uuid()
     blocks2 = []
     for block in blocks:
-        # print block.keys()
         bb = block.get('items') or []
         block['entry_name'] = block['title']
         del block['title']
@@ -47,7 +46,6 @@ for template in templates:
                         if 'field' in ii:
                             iii['field'] = get_uuid()
                         elif group:
-                            print 'sss', iiii
                             iii['field'] = '%s%s' % (uid, iiii)
                         else:
                             print iii
@@ -62,32 +60,48 @@ for template in templates:
                 # for k in ii:
                 #     if (type(ii[k])) not in ['unicode', 'str']:
                 #         ii[k] = json.dumps(ii[k])
-            bb1.append({'items': input_items, 'entry_name': item.get('text'), 'block_id': get_uuid()})
+            bb11 = {'items': input_items, 'entry_name': item.get('text'), 'block_id': get_uuid()}
+            for k in item.keys():
+                if k not in bb11:
+                    bb11[k] = item[k]
+            bb1.append(bb11)
         blocks2.append(bb1)
     templates1.append(blocks2)
 
 
-my_file.write('tcm_template1.json', templates)
+# my_file.write('tcm_template1.json', templates)
 import requests
+import easygui as eg
 from requests.auth import HTTPBasicAuth
+
 auth = HTTPBasicAuth('hpp_test', 'hpp.123456')
 headers = {'Content-Type': 'application/json'}
-rq = {
-    'template_name': '普适版0703',
-    'template': get_uuid(),
+print auth.username
+rq_template = get_uuid()
+template_name = '普适版%s' % format_time(frm='%m%d%H%M')
+template_name = eg.enterbox('模板标题', default=template_name)
+rq_data = {
+    'template_name': template_name,
+    # 'template_name': '普适版',
+    'template': rq_template,
     'template_info': templates1[0]
 }
-rq = requests.request('post', 'http://192.168.105.4:8000/api/v2/detection/template/', auth=auth, headers=headers, json=rq)
+rq_data = my_file.read('tcm_template_online.json')[0]
+rq_data['template'] = rq_template
+rq_data['template_name'] = template_name
+my_file.write('%s.json' % rq_template, rq_data)
+response = requests.request('post', 'http://192.168.105.4:8000/api/v2/detection/template/', auth=auth, headers=headers, json=rq_data)
 # rq = requests.request('post', 'http://10.120.1.105:8000/api/v2/project/', auth=auth, headers=headers)
 # rq = requests.request('post', 'http://10.6.50.248:8000/api/v2/project/', auth=auth, headers=headers)
-print rq.status_code
-if rq.status_code == 200:
-    data = rq.json()
-    if data.get('data'):
-        print data.get('data').get('template')
+print response.status_code
+if response.status_code == 200:
+    response_data = response.json()
+    api_data = response_data.get('data')
+    if api_data:
+        print 'post success', rq_template, api_data.get('template_name')
     else:
-        print data
-# my_file.write('tcm_template2.json', templates1)
+        print response_data
+my_file.write('tcm_template2.json', templates1)
 
 
 if __name__ == "__main__":

@@ -22,6 +22,10 @@ schemas_open_draw_2006 = '%s/drawingml/%d'% (schemas_open, 2006)
 schemas_open_pack_2006 = '%s/package/%d/relationships'% (schemas_open, 2006)
 
 
+def cm2xml(cm):
+    return int(float(cm.split("cm")[0]) * 567)
+
+
 class Paragraph:
     def __init__(self):
         self.test = 'hello word'
@@ -49,23 +53,20 @@ class Paragraph:
         if outline != 0:  # 大纲级别
             w_spacing += '<w:outlineLvl w:val="%d"/>' % outline
 
-        if ind[0] == 'hanging':
-            ind_str = '<w:ind w:left="%d" w:%sChars="%d" w:%s="%d"/>' % (ind[1] * 240, ind[0], ind[1] * 100, ind[0], ind[1] * 240)
-        elif ind == [0, 0]:
+        if ind == [0, 0]:
             ind_str = ''
         else:
             ind_str = '<w:ind '
-            if ind[0] == 'firstLine':
+            if ind[0] in ['firstLine', 'hanging']:
                 ind_str = '<w:ind w:%sChars="%d" w:%s="%d" ' % (ind[0], ind[1] * 100, ind[0], ind[1] * 220)
                 ind = ind[2:]
                 if len(ind) < 2:
                     ind += [0] * (2 - len(ind))
             iii = ['left', 'right']
-
             for i in range(0, len(iii)):
                 if (ind[i]) != 0:
-                    if type(ind[i]) == str:
-                        ind_str += 'w:%s="%d"' % (iii[i], int(float(ind[i].split("cm")[0]) * 567))
+                    if isinstance(ind[i], str):
+                        ind_str += 'w:%s="%d"' % (iii[i], cm2xml(ind[i]))
                     else:
                         ind_str += 'w:%sChars="%d" w:%s="%d" ' % (iii[i], int(ind[i] * 100), iii[i], int(ind[i] * 210))
             ind_str += '/>'
@@ -278,7 +279,10 @@ class Run:
         self.color = color
 
     def text(self, content, size=10.5, weight=0, underline='', space=False, wingdings=False, windChar='F09E',
-             vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='', szCs=0, lang='', noProof=False, shade=''):
+             vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='',
+             szCs=0, lang='', noProof=False, shade='',
+             strike=False
+             ):
         # https://www.jb51.net/web/560864.html
         content = str(content).replace("<", "＜").replace(">", "＞").replace('&', '＆')
         rFonts = '<w:rFonts w:ascii="%s" ' % (self.family if self.family_en == '' else self.family_en)
@@ -317,6 +321,8 @@ class Run:
             rPr += '<w:lang w:val="zh-CN"/>'
         if shade != '':
             rPr += '<w:highlight w:val="%s"/>' % shade
+        if strike:
+            rPr += '<w:strike/>'
         rPr += '</w:rPr>'
         wt = ''
         if content != '':
@@ -342,13 +348,15 @@ class Run:
         return r
 
     def picture(self, cx=0, cy=0, rId='', relativeFrom=['column', 'paragraph'], posOffset=[0, 0], align=['', ''],
-                wrap='tight', text_wrapping='anchor', zoom=1):
+                wrap='tight', text_wrapping='anchor', zoom=1, img_info=None):
         if rId.startswith('rId'):
             rId = rId[3:]
         if self.img_info_path:
-            img_info = get_img(self.img_info_path, rId)
+            if img_info is None:
+                img_info = get_img(self.img_info_path, rId)
             if img_info is None:
                 return ''
+        if img_info is not None:
             cx1 = img_info['w']
             cy1 = img_info['h']
             if cx == 0 and cy == 0:
@@ -535,6 +543,14 @@ class Run:
         run += self.fldChar('end')
         run += '</w:hyperlink>'
         return run
+
+    def checked(self, size=16, bdSize=None):
+        run_checked = self.fldChar('begin')
+        run_checked += self.instr_text(r' eq \o\ac(', True)
+        run_checked += self.text('□', (size+4) if bdSize is None else bdSize)
+        run_checked += self.text(',√)', size)
+        run_checked += self.fldChar('end')
+        return run_checked
 
 
 class Set_page:
@@ -934,11 +950,7 @@ def get_imgs(path):
         path_file = os.path.join(path, i)
         if os.path.isfile(path_file):
             if is_img(i):
-                img = Image.open(path_file)
-                sp = img.size
-                w, h = px2cm(sp[0]), px2cm(sp[1])
-                rId = '.'.join(i.split('.')[:-1])
-                info = {'rId': rId.replace(' ', '_'), 'url': path_file, 'h': h, 'w': w, 'absolute_url': path_file}
+                info = get_img_info(path_file)
                 is_exists = len(filter(lambda x: x['rId'] == info['rId'], infos))
                 if is_exists == 0:
                     infos.append(info)
@@ -946,6 +958,16 @@ def get_imgs(path):
             infos1 = get_imgs(path_file)
             infos += infos1
     return infos
+
+
+def get_img_info(path_file):
+    img = Image.open(path_file)
+    dir_name = os.path.dirname(path_file)
+    file_name = os.path.relpath(path_file, dir_name)
+    sp = img.size
+    w, h = px2cm(sp[0]), px2cm(sp[1])
+    rId = '.'.join(file_name.split('.')[:-1])
+    return {'rId': rId.replace(' ', '_'), 'url': path_file, 'h': h, 'w': w, 'absolute_url': path_file}
 
 
 def get_img(img_info_path, rId):
