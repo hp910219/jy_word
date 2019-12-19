@@ -231,7 +231,7 @@ import codecs
 if os.path.exists(text_url):
     os.remove(text_url)
 a = codecs.open(text_url, 'a', 'utf-8')
-pages = get_pages(pdf_path, images_folder=folder_name)
+pages = get_pages('/tumor/facets_cval_50.pdf', '/tumor/test')
 for i in pages:
     # a.write(codecs.BOM_UTF8)
     # print i

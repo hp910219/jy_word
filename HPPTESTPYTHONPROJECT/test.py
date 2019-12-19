@@ -10,24 +10,31 @@ from jy_word.File import File
 from jy_word.Word import Paragraph, Set_page, Table, Tc, Tr, HyperLink, write_pkg_parts, get_imgs, get_img
 img_info_path = 'img_info.json'
 
+
 class Run:
-    def __init__(self, img_info_path=''):
+    def __init__(self, img_info_path='', family='', family_en='Times New Roman', familyTheme = 'minorEastAsia', color='auto'):
         self.test = 'hello word'
-        self.familyTheme = 'minorEastAsia'
-        self.family_en = 'Times New Roman'
-        self.family = ''
+        self.familyTheme = familyTheme
+        self.family_en = family_en
+        self.family = family
         self.img_info_path = img_info_path
+        self.color = color
 
     def text(self, content, size=10.5, weight=0, underline='', space=False, wingdings=False, windChar='F09E',
-             vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='', szCs=0, lang='', noProof=False):
+             vertAlign='', lastRender=False, br='', color='', italic=False, fill='', rStyle=False, rStyleVal='',
+             szCs=0, lang='', noProof=False, shade='',
+             strike=False
+             ):
         # https://www.jb51.net/web/560864.html
-        content = str(content).replace("<", "&lt;").replace(">", "&gt;").replace('&', '&amp;')
-        rFonts = '<w:rFonts w:ascii="' + self.family_en
+        content = str(content).replace("<", "＜").replace(">", "＞").replace('&', '＆')
+        rFonts = '<w:rFonts w:ascii="%s" ' % (self.family if self.family_en == '' else self.family_en)
         if self.family == '':
-            rFonts += '" w:eastAsiaTheme="' + self.familyTheme
+            rFonts += 'w:eastAsiaTheme="%s" ' % self.familyTheme
         else:
-            rFonts += '" w:eastAsia="%s' % self.family
-        rFonts += '" w:hAnsi="' + self.family_en + '" w:cs="Times New Roman"/>'
+            rFonts += 'w:eastAsia="%s" ' % self.family
+        if self.family_en != '':
+            rFonts += 'w:hAnsi="%s" w:cs="%s"' % (self.family_en, self.family_en)
+        rFonts += '/>'
         sz = '<w:sz w:val="%d"/>' % int(size * 2)
         if szCs != 0:
             sz += '<w:szCs w:val="%d"/>' % int(szCs)
@@ -38,8 +45,7 @@ class Run:
             weight_str = "<w:b/><w:bCs/>"
         if underline != '':
             uuu = '<w:u w:val="%s"/>' % underline
-        if color != '':
-            color = '<w:color w:val="%s"/>' % color
+        color = '<w:color w:val="%s"/>' % (self.color if color == '' else color)
         if vertAlign == 'top':
             vertAlign = '<w:vertAlign w:val="superscript"/>'
         elif vertAlign == 'bottom':
@@ -55,6 +61,10 @@ class Run:
             rPr += '<w:noProof/>'
         if lang != '':
             rPr += '<w:lang w:val="zh-CN"/>'
+        if shade != '':
+            rPr += '<w:highlight w:val="%s"/>' % shade
+        if strike:
+            rPr += '<w:strike/>'
         rPr += '</w:rPr>'
         wt = ''
         if content != '':
@@ -80,21 +90,26 @@ class Run:
         return r
 
     def picture(self, cx=0, cy=0, rId='', relativeFrom=['column', 'paragraph'], posOffset=[0, 0], align=['', ''],
-                wrap='tight', text_wrapping='anchor', zoom=1):
-        img_info = get_img(self.img_info_path, rId)
-        if img_info is None:
-            return ''
-        cx1 = img_info['w']
-        cy1 = img_info['h']
-        if cx == 0 and cy == 0:
-            zoom = zoom
-        elif cx == 0 or cx * cy != 0:
-            zoom = cy / cy1
-        elif cy == 0:
-            zoom = cx / cx1
-        if cx * cy == 0:
-            cx = cx1 * zoom
-            cy = cy1 * zoom
+                wrap='tight', text_wrapping='anchor', zoom=1, img_info=None):
+        if rId.startswith('rId'):
+            rId = rId[3:]
+        if self.img_info_path:
+            if img_info is None:
+                img_info = get_img(self.img_info_path, rId)
+            if img_info is None:
+                return ''
+        if img_info is not None:
+            cx1 = img_info['w']
+            cy1 = img_info['h']
+            if cx == 0 and cy == 0:
+                zoom = zoom
+            elif cx == 0 or cx * cy != 0:
+                zoom = cy / cy1
+            elif cy == 0:
+                zoom = cx / cx1
+            if cx * cy == 0:
+                cx = cx1 * zoom
+                cy = cy1 * zoom
         p = ['positionH', 'positionV']
         postition = ''
         srcRect = ''
@@ -133,7 +148,7 @@ class Run:
             wp14 = '<wp14:sizeRelH relativeFrom="page"><wp14:pctWidth>0</wp14:pctWidth></wp14:sizeRelH>'
             wp14 += '<wp14:sizeRelV relativeFrom="page"><wp14:pctHeight>0</wp14:pctHeight></wp14:sizeRelV>'
         else:
-            wrappp = ''
+            wrappp = '<wp:wrapNone/>'
 
         for i in range(0, len(p)):
             postition += '<wp:%s relativeFrom="%s">' % (p[i], relativeFrom[i])
@@ -143,8 +158,9 @@ class Run:
                 postition += '<wp:posOffset>%d</wp:posOffset></wp:%s>' % (int(posOffset[i] * 359410), p[i])
         run = '<w:r><w:drawing><wp:%s distT="0" distB="0" ' % text_wrapping
         extent_r = 9525
+        behindDoc = 0 if wrap == 'behinddoc' else 1
         if text_wrapping == 'anchor':
-            run += 'distL="114300" distR="114300" simplePos="0" relativeHeight="251658240" behindDoc="1" locked="0" layoutInCell="1" allowOverlap="1">'
+            run += 'distL="114300" distR="114300" simplePos="0" relativeHeight="251658240" behindDoc="%d" locked="0" layoutInCell="1" allowOverlap="1">' % behindDoc
             run += '<wp:simplePos x="0" y="0"/>'
             run += postition
         elif text_wrapping == 'inline':
@@ -183,8 +199,6 @@ class Run:
         # 1cm = 72 / 2.54 pt 1in = 2.54cm = 25.4 mm = 72pt = 6pc
         cm2pt = 72 / 2.54
         cm2xml = 359410
-        ''' <v:path arrowok="t" o:connecttype="custom" o:connectlocs="65089,0;325436,0;390525,65089;390525,953774;377509,966790;13016,966790;0,953774;0,65089;65089,0" o:connectangles="0,0,0,0,0,0,0,0,0"/>
-               '''
         shape = 'roundrect' if 'shape' not in kwargs else kwargs['shape']
         run = '<w:r><w:pict><v:%s ' % shape
         run += 'style="position:%s;' % ('relative' if 'position' not in kwargs else kwargs['position'])
@@ -200,7 +214,8 @@ class Run:
             for w in ['margin-', '', 'mso-wrap-distance-']:
                 who = w + f
                 run += '%s:%fpt;' % (who, 0 if who not in kwargs else kwargs[who] * cm2pt)
-        run += '''z-index:251663360; visibility:visible;
+        run += 'z-index:%s; ' % (-1 if 'z-index' not in kwargs else kwargs['z-index'])
+        run += '''visibility:visible;
                 mso-wrap-style:square;
                 mso-width-percent:0;
                 mso-height-percent:0;
@@ -211,20 +226,17 @@ class Run:
                 mso-width-relative:margin;
                 mso-height-relative:margin;
                 v-text-anchor:middle" '''
-        if 'shape' not in kwargs:
-            run += 'arcsize="19275f" '
+        radius = 0.05 if 'radius' not in kwargs else kwargs['radius']
+        if radius > 0:
+            run += 'arcsize="%ff" ' % (radius * cm2xml)
         if 'coordsize' in kwargs:
             run += 'coordsize="%d,%d" ' % (int(cx * cm2xml), int(cy * cm2xml))
-        if 'path' in kwargs:
-            s = (0.05, 3)
-            path = '"path=m%d,%d,' % (int(s[0] *cm2xml), int(s[1] *cm2xml))
-            path += 'v%d,,' % (int(s[0]/2 * cm2xml))
-            path += 'v%d,,' % (int(s[0] * cm2xml))
-
-            run += 'path="m65089,l325436,v35948,,65089,29141,65089,65089l390525,953774v,7189,-5827,13016,-13016,13016l13016,966790c5827,966790,,960963,,953774l,65089c,29141,29141,,65089,xe" '
-        run += 'fillcolor="%s" ' % '#92d050' if 'fill-color' not in kwargs else kwargs['fill-color']
-        run += 'strokecolor="%s" ' % '#92d050' if 'stroke-color' not in kwargs else kwargs['stroke-color']
-        run += 'strokeweight="%dpt">' % 2
+        if 'fill-color' in kwargs:
+            run += 'fillcolor="%s" ' % kwargs['fill-color']
+        run += 'strokecolor="%s" ' % ('#92d050' if 'stroke-color' not in kwargs else kwargs['stroke-color'])
+        run += 'strokeweight="%fpt">' % (0.2 if 'strokeweight' not in kwargs else kwargs['strokeweight'])
+        if 'opacity' in kwargs:
+            run += '<v:fill opacity="%f"/>' % kwargs['opacity']
         if 'para' in kwargs:
             run += '<v:textbox><w:txbxContent>%s</w:txbxContent></v:textbox>' % kwargs['para']
         run += '</v:%s></w:pict></w:r>' % shape
@@ -250,6 +262,38 @@ class Run:
     def style(self, text, val='af8'):
         r = '<w:r><w:rPr><w:rStyle w:val="%s"/><w:rFonts w:eastAsiaTheme="%s"/></w:rPr><w:t>%s</w:t></w:r>' % (val, self.familyTheme, text)
         return r
+
+    def cat(self, item):
+        run = ''
+        if item['bm'] == bm_index0:
+            run = self.fldChar('begin')
+            run += self.instr_text('1-3', space=True)
+            run += self.fldChar()
+        font_set = {} if 'font_set' not in item else item['font_set']
+        run += '<w:hyperlink w:anchor="_Toc%d" w:history="1">' % item['bm']
+        if 'title' in item:
+            run += self.text(item['title'], space=True, **font_set)
+        if 'run' in item:
+            run += item['run']
+        run += self.tab()
+        run += self.fldChar('begin')
+        run += self.instr_text(' PAGEREF _Toc%d \h ' % item['bm'], space=True)
+        run += self.text('')
+        run += self.fldChar()
+        if 'page' in item:
+            run += self.text(item['page'], **font_set)
+        run += self.fldChar('end')
+        run += '</w:hyperlink>'
+        return run
+
+    def checked(self, size=16, bdSize=None):
+        run_checked = self.fldChar('begin')
+        run_checked += self.instr_text(r' eq \o\ac(', True)
+        run_checked += self.text('□', (size+4) if bdSize is None else bdSize)
+        run_checked += self.text(',√)', size)
+        run_checked += self.fldChar('end')
+        return run_checked
+
 
 my_file = File()
 

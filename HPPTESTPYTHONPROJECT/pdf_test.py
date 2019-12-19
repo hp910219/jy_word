@@ -6,9 +6,9 @@ import PythonMagick
 from PyPDF2 import PdfFileReader
 from pdf2img import pdf2img
 
-C_RESOURCE_FILE=u'H:\晶云公司\\1.需求文档\下载报告\多组学临床检测报告\数据\part0'
-C_PDFNAME=u'王其君100301检测报告.pdf'
-C_JPGNAME=u'img\王其君100301检测报告%s.jpg'
+C_RESOURCE_FILE=u'/tumor'
+C_PDFNAME=u'facets_cval_50.pdf'
+C_JPGNAME=u'/tumor/%s.jpg'
 
 input_stream = file(C_RESOURCE_FILE+'\\'+C_PDFNAME, 'rb')
 pdf_input = PdfFileReader(input_stream,strict=False)    #错误1

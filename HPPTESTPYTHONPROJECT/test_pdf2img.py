@@ -3,10 +3,10 @@
 # Create Date 2018/11/10 0010
 __author__ = 'huohuo'
 import os
-pdf_path = 'report2.pdf'
+pdf_path = '/tumor/facets_cval_50.pdf'
 print os.path.exists(pdf_path)
 import PythonMagick
-
+p = 0
 
 try:
     im =PythonMagick.Image(pdf_path)

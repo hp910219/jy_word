@@ -81,6 +81,8 @@ class Paragraph:
             pPr += self.set_tabs(tabs[0], tabs[1], tabs[2])
         if 'shade' in kwargs:
             pPr += '<w:shd w:val="clear" w:color="auto" w:fill="%s"/>' % kwargs['shade']
+        if 'numId' in kwargs:
+            pPr += '<w:numPr><w:ilvl w:val="0"/><w:numId w:val="%s"/></w:numPr>' % kwargs['numId']
         pPr += '</w:pPr>'
         return pPr
 
@@ -148,7 +150,7 @@ class Paragraph:
                                                                                            posOffset=posOffset))
         return init
 
-    def h5(self, text, size=10.5, spacing=[1, 1], weight=0, ind=[0, 0], line=14, jc='left', outline=4, family='', family_en='', bm_name=''):
+    def h5(self, text, size=10.5, spacing=[1, 1], weight=0, ind=[0, 0], line=14, jc='left', outline=5, family='', family_en='', bm_name=''):
         r = Run()
         if family != '':
             r.family = family
@@ -169,14 +171,14 @@ class Paragraph:
         if bm_name != '':
             print text
         run = r.text(text, size=size, weight=weight, color=color) + runs
-        return self.write(self.set(spacing=spacing, line=line, rule='exact', outline=2, ind=ind), run, bm_name)
+        return self.write(self.set(spacing=spacing, line=line, rule='exact', outline=4, ind=ind), run, bm_name)
 
     def h3(self, text, run='', before=0, after=0, size=11, left=0, right=0, jc='center', family='', family_en=''):
         r = Run()
-        if family != '':
-            r.family = family
-        if family_en != '':
-            r.family_en = family_en
+        # if family != '':
+        #     r.family = family
+        # if family_en != '':
+        #     r.family_en = family_en
         spacing = [before, after]
         ind = [left, right]
         pPrr = self.set(spacing=spacing, line=24, rule='auto', outline=2, jc=jc, ind=ind)
@@ -284,6 +286,39 @@ class Run:
              strike=False
              ):
         # https://www.jb51.net/web/560864.html
+        if size == '初号':
+            size = 42
+        elif size == '小初':
+            size = 36
+        elif size == '一号':
+            size = 26
+        elif size == '小一':
+            size = 24
+        elif size == '二号':
+            size = 22
+        elif size == '小二':
+            size = 18
+        elif size == '三号':
+            size = 16
+        elif size == '小三':
+            size = 15
+        elif size == '四号':
+            size = 14
+        elif size == '小四':
+            size = 12
+        elif size == '五号':
+            size = 10.5
+        elif size == '小五':
+            size = 9
+        elif size == '六号':
+            size = 7.5
+        elif size == '小六':
+            size = 6.5
+        elif size == '七号':
+            size = 5.5
+        elif size == '八号':
+            size = 5
+
         content = str(content).replace("<", "＜").replace(">", "＞").replace('&', '＆')
         rFonts = '<w:rFonts w:ascii="%s" ' % (self.family if self.family_en == '' else self.family_en)
         if self.family == '':
@@ -314,7 +349,10 @@ class Run:
             italic = ''
         if rStyle:
             sz += '<w:rStyle w:val="%s"/>' % rStyleVal
-        rPr = '<w:rPr>' + rFonts + weight_str + italic + uuu + sz + vertAlign + color
+        shd = ''
+        if fill != '':
+            shd = '<w:shd w:val="clear" w:color="auto" w:fill="%s"/>' % fill
+        rPr = '<w:rPr>' + rFonts + weight_str + italic + uuu + sz + vertAlign + color + shd
         if noProof:
             rPr += '<w:noProof/>'
         if lang != '':
@@ -335,9 +373,7 @@ class Run:
         wingdings1 = ''
         if wingdings:
             wingdings1 = '<w:sym w:font="Wingdings" w:char="%s"/>' % windChar
-        shd = ''
-        if fill != '':
-            shd = '<w:shd w:val="clear" w:color="auto" w:fill="%s"/>' % fill
+
         r = '<w:r w:rsidRPr="008059BD">%s%s%s%s%s</w:r>' % (rPr, wingdings1, lastRendered, shd, wt)
         if br == 'column':
             r += '<w:r w:rsidR="003334DE"><w:br w:type="column"/></w:r>'
@@ -457,10 +493,11 @@ class Run:
         # 1cm = 72 / 2.54 pt 1in = 2.54cm = 25.4 mm = 72pt = 6pc
         cm2pt = 72 / 2.54
         cm2xml = 359410
+        position = kwargs.get('position') or 'relative'
         shape = 'roundrect' if 'shape' not in kwargs else kwargs['shape']
         run = '<w:r><w:pict><v:%s ' % shape
-        run += 'style="position:%s;' % ('relative' if 'position' not in kwargs else kwargs['position'])
-        run += 'text-align:%s;' % ('left' if 'text-align' not in kwargs else kwargs['text-align'])
+        run += 'style="position:%s;' % (kwargs.get('position') or 'relative')
+        run += 'text-align:%s;' % (kwargs.get('text-align') or'left')
         run += 'width:%.2fpt;' % (cm2pt * cx)
         run += 'height:%.2fpt;' % (cm2pt * cy)
         if 'rotation' in kwargs:
@@ -469,10 +506,15 @@ class Run:
         fangxiang = ['top', 'right', 'bottom', 'left']
         for i in range(4):
             f = fangxiang[i]
-            for w in ['margin-', '', 'mso-wrap-distance-']:
+            for w in ['margin-', '', 'mso-wrap-distance-', 'padding-']:
                 who = w + f
-                run += '%s:%fpt;' % (who, 0 if who not in kwargs else kwargs[who] * cm2pt)
-        run += 'z-index:%s; ' % (-1 if 'z-index' not in kwargs else kwargs['z-index'])
+                run += '%s:%fpt;' % (who, (kwargs.get(who) or 0) * cm2pt)
+
+        run += 'z-index:%s; ' % (kwargs.get('z-index') or -1)
+
+        if position == 'absolute':
+            run += 'mso-position-horizontal:absolute; '
+            run += 'mso-position-vertical:absolute; '
         run += '''visibility:visible;
                 mso-wrap-style:square;
                 mso-width-percent:0;
@@ -484,7 +526,18 @@ class Run:
                 mso-width-relative:margin;
                 mso-height-relative:margin;
                 v-text-anchor:middle" '''
-        radius = 0.05 if 'radius' not in kwargs else kwargs['radius']
+        '''
+        position:absolute;
+        margin-left:-1.35pt;margin-top:2pt;width:129pt;height:37.4pt;z-index:251668480;
+        visibility:visible;mso-wrap-style:square;mso-width-percent:0;mso-height-percent:0;mso-wrap-distance-left:9pt;
+        mso-wrap-distance-top:0;mso-wrap-distance-right:9pt;mso-wrap-distance-bottom:0;
+        mso-position-horizontal:absolute;
+        mso-position-horizontal-relative:text;
+        mso-position-vertical:absolute;
+        mso-position-vertical-relative:text;mso-width-percent:0;
+        mso-height-percent:0;mso-width-relative:margin;mso-height-relative:margin;
+        v-text-anchor:middle'''
+        radius = kwargs.get('radius') or 0.05
         if radius > 0:
             run += 'arcsize="%ff" ' % (radius * cm2xml)
         if 'coordsize' in kwargs:
@@ -496,7 +549,7 @@ class Run:
         if 'opacity' in kwargs:
             run += '<v:fill opacity="%f"/>' % kwargs['opacity']
         if 'para' in kwargs:
-            run += '<v:textbox><w:txbxContent>%s</w:txbxContent></v:textbox>' % kwargs['para']
+            run += '<v:textbox inset="0,0,0,0"><w:txbxContent>%s</w:txbxContent></v:textbox>' % kwargs['para']
         run += '</v:%s></w:pict></w:r>' % shape
         return run
 
@@ -742,7 +795,7 @@ class Tc:
             tcBorders_str = '<w:tcBorders>'
             # <w:bottom w:val="single" w:sz="12" w:space="0" w:color="auto"/>
             for b in tcBorders:
-                tcBorders_str += '<w:%s w:val="%s" w:sz="8" w:space="0" w:color="%s"/>' % (b, line_type, color)
+                tcBorders_str += '<w:%s w:val="%s" w:sz="%s" w:space="0" w:color="%s"/>' % (b, line_type, kwargs.get('lineSize') or 8, color)
             tcBorders_str += '</w:tcBorders>'
         tcPr = '<w:tcPr><w:tcW w:w="%d" w:type="dxa"/>' % w
         if gridSpan != 0:
@@ -905,7 +958,7 @@ def write_cat(cat, para, pos='12000', spacing=[0, 0]):
         run += r.instr_text('1-3', space=True)
         run += r.fldChar()
     run += hyperlink.write(cat['bm'], cat['title'], cat['page'])
-    para += p.write(p.set(pStyle=cat['style'], tabs=['right', 'dot', pos], line=18, spacing=spacing, rule='auto'), run=run)
+    para += p.write(p.set(pStyle=cat['style'], tabs=['right', 'dot', pos], line=16, spacing=spacing, rule='auto'), run=run)
     return para
 
 
@@ -979,7 +1032,7 @@ def get_img(img_info_path, rId):
 
 
 def is_img(file_path):
-    postfix = ['.png', '.jpg', '.jpeg']
+    postfix = ['.png', '.jpg', '.jpeg', '.gif']
     for p in postfix:
         if file_path.endswith(p):
             return True

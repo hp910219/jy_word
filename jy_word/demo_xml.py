@@ -1043,6 +1043,119 @@ demo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
                         <w:lvlJc w:val="left"/>
                     </w:lvl>
                 </w:abstractNum>
+                <w:abstractNum w:abstractNumId="11">
+					<w:nsid w:val="470D77CD"/>
+					<w:multiLevelType w:val="hybridMultilevel"/>
+					<w:tmpl w:val="79E02B3C"/>
+					<w:lvl w:ilvl="0" w:tplc="0409000B">
+						<w:start w:val="1"/>
+						<w:numFmt w:val="bullet"/>
+						<w:lvlText w:val=""/>
+						<w:lvlJc w:val="left"/>
+						<w:pPr>
+							<w:ind w:left="420" w:hanging="420"/>
+						</w:pPr>
+						<w:rPr>
+							<w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
+						</w:rPr>
+					</w:lvl>
+					<w:lvl w:ilvl="1" w:tplc="04090003" w:tentative="1">
+						<w:start w:val="1"/>
+						<w:numFmt w:val="bullet"/>
+						<w:lvlText w:val=""/>
+						<w:lvlJc w:val="left"/>
+						<w:pPr>
+							<w:ind w:left="840" w:hanging="420"/>
+						</w:pPr>
+						<w:rPr>
+							<w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
+						</w:rPr>
+					</w:lvl>
+					<w:lvl w:ilvl="2" w:tplc="04090005" w:tentative="1">
+						<w:start w:val="1"/>
+						<w:numFmt w:val="bullet"/>
+						<w:lvlText w:val=""/>
+						<w:lvlJc w:val="left"/>
+						<w:pPr>
+							<w:ind w:left="1260" w:hanging="420"/>
+						</w:pPr>
+						<w:rPr>
+							<w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
+						</w:rPr>
+					</w:lvl>
+					<w:lvl w:ilvl="3" w:tplc="04090001" w:tentative="1">
+						<w:start w:val="1"/>
+						<w:numFmt w:val="bullet"/>
+						<w:lvlText w:val=""/>
+						<w:lvlJc w:val="left"/>
+						<w:pPr>
+							<w:ind w:left="1680" w:hanging="420"/>
+						</w:pPr>
+						<w:rPr>
+							<w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
+						</w:rPr>
+					</w:lvl>
+					<w:lvl w:ilvl="4" w:tplc="04090003" w:tentative="1">
+						<w:start w:val="1"/>
+						<w:numFmt w:val="bullet"/>
+						<w:lvlText w:val=""/>
+						<w:lvlJc w:val="left"/>
+						<w:pPr>
+							<w:ind w:left="2100" w:hanging="420"/>
+						</w:pPr>
+						<w:rPr>
+							<w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
+						</w:rPr>
+					</w:lvl>
+					<w:lvl w:ilvl="5" w:tplc="04090005" w:tentative="1">
+						<w:start w:val="1"/>
+						<w:numFmt w:val="bullet"/>
+						<w:lvlText w:val=""/>
+						<w:lvlJc w:val="left"/>
+						<w:pPr>
+							<w:ind w:left="2520" w:hanging="420"/>
+						</w:pPr>
+						<w:rPr>
+							<w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
+						</w:rPr>
+					</w:lvl>
+					<w:lvl w:ilvl="6" w:tplc="04090001" w:tentative="1">
+						<w:start w:val="1"/>
+						<w:numFmt w:val="bullet"/>
+						<w:lvlText w:val=""/>
+						<w:lvlJc w:val="left"/>
+						<w:pPr>
+							<w:ind w:left="2940" w:hanging="420"/>
+						</w:pPr>
+						<w:rPr>
+							<w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
+						</w:rPr>
+					</w:lvl>
+					<w:lvl w:ilvl="7" w:tplc="04090003" w:tentative="1">
+						<w:start w:val="1"/>
+						<w:numFmt w:val="bullet"/>
+						<w:lvlText w:val=""/>
+						<w:lvlJc w:val="left"/>
+						<w:pPr>
+							<w:ind w:left="3360" w:hanging="420"/>
+						</w:pPr>
+						<w:rPr>
+							<w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
+						</w:rPr>
+					</w:lvl>
+					<w:lvl w:ilvl="8" w:tplc="04090005" w:tentative="1">
+						<w:start w:val="1"/>
+						<w:numFmt w:val="bullet"/>
+						<w:lvlText w:val=""/>
+						<w:lvlJc w:val="left"/>
+						<w:pPr>
+							<w:ind w:left="3780" w:hanging="420"/>
+						</w:pPr>
+						<w:rPr>
+							<w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
+						</w:rPr>
+					</w:lvl>
+				</w:abstractNum>
                 <w:num w:numId="1">
                     <w:abstractNumId w:val="1"/>
                 </w:num>
@@ -1072,6 +1185,9 @@ demo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
                 </w:num>
                 <w:num w:numId="10">
                     <w:abstractNumId w:val="7"/>
+                </w:num>
+                <w:num w:numId="11">
+                    <w:abstractNumId w:val="11"/>
                 </w:num>
             </w:numbering>
         </pkg:xmlData>
@@ -5730,7 +5846,6 @@ demo_xml = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
             </cp:coreProperties>
         </pkg:xmlData>
     </pkg:part>
-
 </pkg:package>'''
 if __name__ == "__main__":
     pass

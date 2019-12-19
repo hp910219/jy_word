@@ -3,6 +3,7 @@
 # Create Date 2018/6/28 0028
 __author__ = 'huohuo'
 import os
+import sys
 try:
     import PythonMagick
     from PythonMagick import Image
@@ -30,7 +31,7 @@ def pdf2img(input_pdf, postfix='.png', **kwargs):
         os.remove(output_jpg)
     output_img.write(output_jpg)
 
-
+from tempfile import NamedTemporaryFile
 
 class ManImage:
     """
@@ -62,7 +63,7 @@ class ManImage:
         try:
             for i in range(pages):
                 image = PythonMagick.Image(self.i_file + '[' + str(i) + ']')
-                # image.density(str(ds))
+                image.density(str(300))
                 image.read(self.i_file + '[' + str(i) + ']')
                 image.magick("PNG")
                 image.write(os.path.join(self.o_dire, '%d.png'%(i+1)))
@@ -74,8 +75,11 @@ class ManImage:
 
 if __name__ == "__main__":
     # pdf2img('D:\pythonproject\\report\data\part1\\tmb.pdf')
-    pdf_path = r'/pythonproject/GATCReport/results/report2.pdf'
-    dir_name = r'D:\pythonproject\GATCWeb_04\Web3\static'
+    # pdf_path = r'/pythonproject/GATCReport/results/report2.pdf'
+    # dir_name = r'D:\pythonproject\GATCWeb_04\Web3\static'
+    pdf_path = r'D:\tumor\\facets_cval_50.pdf'
+    dir_name = r'D:\tumor'
+
     o_dire = os.path.join(dir_name, 'report2')
     if os.path.exists(o_dire) is False:
         os.makedirs(o_dire)

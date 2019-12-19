@@ -206,7 +206,7 @@ def send_msg_by_dd(message, **kwargs):
                             access_token 通知机器人值，表示用哪个机器人
     :return:
     """
-    access_token = 'f0e012537fb60ac5e37be4239e9380e574eb65574f36446f7160750db9f413fe'
+    access_token = '136f44ec383377d7980bb43e9b8acb1eac0c1f6a6b31d6ba3ba10d43923751f8'
     env = get_value(kwargs, 'env', '环境')
     mobile_phone = get_value(kwargs, 'mobile_phone', '15538819853')
     txt_data = {
